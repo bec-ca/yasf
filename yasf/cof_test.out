@@ -1,0 +1,92 @@
+================================================================================
+Test: basic
+
+bar:
+  str
+  next
+  other
+
+eggs:
+
+bool_field: false
+
+int_field: 5
+
+float_field: 5.4
+
+vector_int_field:
+
+
+[bar:[str next other] eggs:[] bool_field:[false] int_field:[5] float_field:[5.4] vector_int_field:[]]
+
+================================================================================
+Test: basic_escaping
+
+bar:
+  str
+  ne'xt
+  ot:her
+  ot\her
+
+
+[bar:[str ne\'xt 'ot:her' ot\\her]]
+
+================================================================================
+Test: basic_round_trip
+
+bar:
+  str
+  ne'xt
+  ot:her
+  ot\her
+  foo]bar
+  list:
+    1
+    2
+    3
+
+[bar:[str ne\'xt 'ot:her' ot\\her 'foo]bar' list:[1 2 3]]]
+
+bar:
+  str
+  ne'xt
+  ot:her
+  ot\her
+  foo]bar
+  list:
+    1
+    2
+    3
+
+
+
+================================================================================
+Test: top_round_trip
+Original: foos:
+  *
+    bar: 
+    eggs:
+    bool_field: false
+    int_field: 0
+    float_field: 0.000000
+    vector_int_field:
+    variant:
+      int: 0
+
+
+Cof serizlied: [foos:[[bar:'' eggs:[] bool_field:false int_field:0 float_field:0.000000 vector_int_field:[] variant:int:0]]]
+Config value from cof: foos:
+  *
+    bar: 
+    eggs:
+    bool_field: false
+    int_field: 0
+    float_field: 0.000000
+    vector_int_field:
+    variant:
+      int: 0
+
+
+Final back:
+-----------------------------
+

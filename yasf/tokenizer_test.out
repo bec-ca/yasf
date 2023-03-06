@@ -1,0 +1,57 @@
+================================================================================
+Test: tokenize1
+document:
+foo bar bla*
+------
+Tokens:
+Token(IndentToken(0) Location(line:1 col:1 filename:)) Token(AtomToken(foo) Location(line:1 col:1 filename:)) Token(AtomToken(bar) Location(line:1 col:5 filename:)) Token(AtomToken(bla) Location(line:1 col:9 filename:))
+----------------------------------------
+document:
+foo bar: bla*
+------
+Tokens:
+Token(IndentToken(0) Location(line:1 col:1 filename:)) Token(AtomToken(foo) Location(line:1 col:1 filename:)) Token(KeyToken(bar) Location(line:1 col:5 filename:)) Token(AtomToken(bla) Location(line:1 col:10 filename:))
+----------------------------------------
+document:
+foo: bar: bla:*
+------
+Tokens:
+Token(IndentToken(0) Location(line:1 col:1 filename:)) Token(KeyToken(foo) Location(line:1 col:1 filename:)) Token(KeyToken(bar) Location(line:1 col:6 filename:)) Token(KeyToken(bla) Location(line:1 col:11 filename:))
+----------------------------------------
+document:
+foo bar bla   *
+------
+Tokens:
+Token(IndentToken(0) Location(line:1 col:1 filename:)) Token(AtomToken(foo) Location(line:1 col:1 filename:)) Token(AtomToken(bar) Location(line:1 col:5 filename:)) Token(AtomToken(bla) Location(line:1 col:9 filename:))
+----------------------------------------
+document:
+   foo bar bla*
+------
+Tokens:
+Token(IndentToken(3) Location(line:1 col:1 filename:)) Token(AtomToken(foo) Location(line:1 col:4 filename:)) Token(AtomToken(bar) Location(line:1 col:8 filename:)) Token(AtomToken(bla) Location(line:1 col:12 filename:))
+----------------------------------------
+document:
+   foo bar bla   *
+------
+Tokens:
+Token(IndentToken(3) Location(line:1 col:1 filename:)) Token(AtomToken(foo) Location(line:1 col:4 filename:)) Token(AtomToken(bar) Location(line:1 col:8 filename:)) Token(AtomToken(bla) Location(line:1 col:12 filename:))
+----------------------------------------
+document:
+foo
+bar: bla*
+------
+Tokens:
+Token(IndentToken(0) Location(line:1 col:1 filename:)) Token(AtomToken(foo) Location(line:1 col:1 filename:)) Token(IndentToken(0) Location(line:2 col:1 filename:)) Token(KeyToken(bar) Location(line:2 col:1 filename:)) Token(AtomToken(bla) Location(line:2 col:6 filename:))
+----------------------------------------
+document:
+   foo
+   bar
+    
+    bla
+   
+      *
+------
+Tokens:
+Token(IndentToken(3) Location(line:1 col:1 filename:)) Token(AtomToken(foo) Location(line:1 col:4 filename:)) Token(IndentToken(3) Location(line:2 col:1 filename:)) Token(AtomToken(bar) Location(line:2 col:4 filename:)) Token(IndentToken(4) Location(line:3 col:1 filename:)) Token(IndentToken(4) Location(line:4 col:1 filename:)) Token(AtomToken(bla) Location(line:4 col:5 filename:)) Token(IndentToken(3) Location(line:5 col:1 filename:)) Token(IndentToken(6) Location(line:6 col:1 filename:))
+----------------------------------------
+

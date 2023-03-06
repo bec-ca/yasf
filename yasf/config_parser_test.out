@@ -1,0 +1,78 @@
+================================================================================
+Test: parse
+foo:
+  bar:
+    yo
+    here
+    list
+  there:
+    ah
+    haha
+  empty_list:
+
+nested_records:
+  *
+    foo:
+      bar
+      drink
+  atom_no_change
+  *
+    key1: 1
+    key2: 2
+  foo:
+    this_is_also_a_valid_syntax
+    and
+    this
+    too
+
+other:
+  thing
+  thang
+
+empty_list_at_the_end:
+
+
+
+================================================================================
+Test: parse_new_syntax
+output:
+foo:
+  bar
+  next
+
+other:
+  a
+  b
+  c
+
+list:
+  *
+    key: 1
+  *
+    key: 2
+
+not_list:
+  key: 1
+  key: 2
+
+super_nested:
+  key1:
+    key2:
+      key3:
+        a
+        b
+        foo:
+          a
+          *
+            key1:
+              4
+              key2: 6
+
+end:
+
+
+
+================================================================================
+Test: parse_error
+:7: Unexpected indentation, expected 4 spaces, got 5
+

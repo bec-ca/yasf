@@ -1,0 +1,255 @@
+cpp_library:
+  name: cof
+  sources: cof.cpp
+  headers: cof.hpp
+  libs:
+    /bee/file_reader
+    /bee/file_writer
+    /bee/to_string
+    serializer
+    value
+
+cpp_test:
+  name: cof_test
+  sources: cof_test.cpp
+  libs:
+    /bee/format_memory
+    /bee/testing
+    cof
+    config_parser
+    test_parser
+  output: cof_test.out
+
+cpp_library:
+  name: config_parser
+  sources: config_parser.cpp
+  headers: config_parser.hpp
+  libs:
+    /bee/error
+    /bee/file_reader
+    /bee/util
+    tokenizer
+    value
+
+cpp_test:
+  name: config_parser_test
+  sources: config_parser_test.cpp
+  libs:
+    /bee/format_memory
+    /bee/testing
+    config_parser
+  output: config_parser_test.out
+
+cpp_library:
+  name: core_types
+  headers: core_types.hpp
+  libs: external_type
+
+cpp_library:
+  name: definitions
+  sources: definitions.cpp
+  headers: definitions.hpp
+  libs:
+    /bee/error
+    /bee/format
+    /bee/util
+    type
+
+cpp_library:
+  name: enum
+  sources: enum.cpp
+  headers: enum.hpp
+  libs:
+    /bee/format
+    type
+
+cpp_library:
+  name: external_type
+  sources: external_type.cpp
+  headers: external_type.hpp
+  libs:
+    /bee/format
+    type
+
+gen_rule:
+  name: generate_test_parser
+  binary: test_parser_generator
+  flags:
+    gen
+    --base-name
+    test_parser
+    --output-dir
+    .
+  outputs:
+    test_parser.cpp
+    test_parser.hpp
+
+cpp_library:
+  name: generator
+  headers: generator.hpp
+  libs:
+    definitions
+    enum
+    external_type
+    record
+    simple_types
+    type
+    variant
+    vec
+
+cpp_library:
+  name: generator_main_lib
+  sources: generator_main_lib.cpp
+  headers: generator_main_lib.hpp
+  libs:
+    /bee/file_writer
+    /bee/sub_process
+    /command/command_builder
+    /command/group_builder
+    definitions
+
+cpp_library:
+  name: location
+  sources: location.cpp
+  headers: location.hpp
+  libs: /bee/format
+
+cpp_library:
+  name: of_stringable_mixin
+  sources: of_stringable_mixin.cpp
+  headers: of_stringable_mixin.hpp
+  libs:
+    serializer
+    value
+
+cpp_library:
+  name: parser_helpers
+  sources: parser_helpers.cpp
+  headers: parser_helpers.hpp
+  libs:
+    /bee/error
+    cof
+    serializer
+    value
+
+cpp_library:
+  name: record
+  sources: record.cpp
+  headers: record.hpp
+  libs:
+    /bee/format
+    /bee/util
+    type
+
+cpp_library:
+  name: serializer
+  sources: serializer.cpp
+  headers: serializer.hpp
+  libs:
+    /bee/span
+    /bee/time
+    value
+
+cpp_library:
+  name: simple_types
+  sources: simple_types.cpp
+  headers: simple_types.hpp
+  libs:
+    /bee/format
+    type
+
+cpp_library:
+  name: string_mixin
+  headers: string_mixin.hpp
+  libs:
+    /bee/string_mixin
+    of_stringable_mixin
+
+cpp_library:
+  name: test_parser
+  sources: test_parser.cpp
+  headers: test_parser.hpp
+  libs:
+    /bee/error
+    /bee/format
+    /bee/util
+    parser_helpers
+    serializer
+    to_stringable_mixin
+
+cpp_binary:
+  name: test_parser_generator
+  libs: test_parser_generator_main
+
+cpp_library:
+  name: test_parser_generator_main
+  sources: test_parser_generator_main.cpp
+  libs:
+    generator
+    generator_main_lib
+
+cpp_test:
+  name: test_parser_test
+  sources: test_parser_test.cpp
+  libs:
+    /bee/format_optional
+    /bee/testing
+    config_parser
+    test_parser
+  output: test_parser_test.out
+
+cpp_library:
+  name: to_stringable_mixin
+  sources: to_stringable_mixin.cpp
+  headers: to_stringable_mixin.hpp
+  libs:
+    cof
+    value
+
+cpp_library:
+  name: tokenizer
+  sources: tokenizer.cpp
+  headers: tokenizer.hpp
+  libs:
+    /bee/error
+    location
+
+cpp_test:
+  name: tokenizer_test
+  sources: tokenizer_test.cpp
+  libs:
+    /bee/error
+    /bee/format_vector
+    /bee/testing
+    tokenizer
+  output: tokenizer_test.out
+
+cpp_library:
+  name: type
+  sources: type.cpp
+  headers: type.hpp
+
+cpp_library:
+  name: value
+  sources: value.cpp
+  headers: value.hpp
+  libs:
+    /bee/error
+    location
+
+cpp_library:
+  name: variant
+  sources: variant.cpp
+  headers: variant.hpp
+  libs:
+    /bee/util
+    type
+
+cpp_library:
+  name: vec
+  sources: vec.cpp
+  headers: vec.hpp
+  libs:
+    /bee/format
+    type
+

@@ -1,0 +1,160 @@
+================================================================================
+Test: parse
+original:
+foos:
+  *
+    bar: str
+    eggs:
+    bool_field: false
+    int_field: 5
+    float_field: 5.4
+    vector_int_field:
+    variant:
+      int: 5
+    color: red
+
+
+round trip:
+foos:
+  *
+    bar: str
+    eggs:
+    bool_field: false
+    int_field: 5
+    float_field: 5.400000
+    vector_int_field:
+    variant:
+      int: 5
+    color: red
+
+
+round trip once more:
+foos:
+  *
+    bar: str
+    eggs:
+    bool_field: false
+    int_field: 5
+    float_field: 5.400000
+    vector_int_field:
+    variant:
+      int: 5
+    color: red
+
+
+location: (Location(line:1 col:1 filename:test.txt))
+
+================================================================================
+Test: parse2
+original:
+foos:
+  *
+    bar: str
+    eggs:
+    bool_field: false
+    int_field: 5
+    opt_field: 8
+    opt_vec_field: foo
+    float_field: 5.4
+    vector_int_field:
+    variant:
+      int: 5
+    color: red
+
+
+round trip:
+foos:
+  *
+    bar: str
+    eggs:
+    bool_field: false
+    int_field: 5
+    opt_field: 8
+    opt_vec_field: foo
+    float_field: 5.400000
+    vector_int_field:
+    variant:
+      int: 5
+    color: red
+
+
+round trip once more:
+foos:
+  *
+    bar: str
+    eggs:
+    bool_field: false
+    int_field: 5
+    opt_field: 8
+    opt_vec_field: foo
+    float_field: 5.400000
+    vector_int_field:
+    variant:
+      int: 5
+    color: red
+
+
+location: (Location(line:1 col:1 filename:test.txt))
+
+================================================================================
+Test: parse3
+original:
+foos:
+  *
+    bar: str
+    eggs:
+    bool_field: false
+    int_field: 5
+    opt_field: 8
+    opt_vec_field:
+    float_field: 5.4
+    vector_int_field:
+    variant:
+      int: 5
+    color: red
+
+
+round trip:
+foos:
+  *
+    bar: str
+    eggs:
+    bool_field: false
+    int_field: 5
+    opt_field: 8
+    float_field: 5.400000
+    vector_int_field:
+    variant:
+      int: 5
+    color: red
+
+
+round trip once more:
+foos:
+  *
+    bar: str
+    eggs:
+    bool_field: false
+    int_field: 5
+    opt_field: 8
+    float_field: 5.400000
+    vector_int_field:
+    variant:
+      int: 5
+    color: red
+
+
+location: (Location(line:1 col:1 filename:test.txt))
+
+================================================================================
+Test: error_missing_field
+foobar.txt:4: Field 'int_field' not defined in '[bar:[str] eggs:[] bool_field:[false] opt_field:[8] float_field:[5.4] vector_int_field:[] variant:[int:[5]] color:[red]]'
+
+================================================================================
+Test: error_missing_field2
+foobar.txt:4: Field 'eggs' not defined in '[bar:[str] bool_field:[false] int_field:[5] opt_field:[8] float_field:[5.4] vector_int_field:[] variant:[int:[5]] color:[red]]'
+
+================================================================================
+Test: error_repeated
+foobar.txt:8: Field 'int_field' is defined more than once in 'int_field:[6]'
+
