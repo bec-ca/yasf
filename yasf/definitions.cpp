@@ -6,7 +6,6 @@
 #include "bee/format.hpp"
 #include "bee/util.hpp"
 
-using bee::format;
 using std::set;
 using std::string;
 
@@ -31,7 +30,7 @@ string Definitions::gen_decl(const string& base_name) const
     bee::insert_many(additional_headers, type->additional_headers());
   }
   for (const auto& header : additional_headers) {
-    output += format("#include \"$\"\n", header);
+    output += F("#include \"$\"\n", header);
   }
 
   output += "\n";
@@ -40,7 +39,7 @@ string Definitions::gen_decl(const string& base_name) const
   output += "#include <vector>\n";
   output += "#include <variant>\n";
   output += "\n";
-  output += format("namespace $ {\n", base_name);
+  output += F("namespace $ {{\n", base_name);
   output += "\n";
   for (const auto& type : types) {
     output += type->gen_decl();
@@ -55,7 +54,7 @@ string Definitions::gen_decl(const string& base_name) const
 string Definitions::gen_impl(const string& base_name) const
 {
   string output;
-  output += format("#include \"$.hpp\"\n", base_name);
+  output += F("#include \"$.hpp\"\n", base_name);
   output += "\n";
   output += "#include <type_traits>\n";
   output += "\n";
@@ -63,15 +62,24 @@ string Definitions::gen_impl(const string& base_name) const
   output += "#include \"bee/util.hpp\"\n";
   output += "#include \"yasf/parser_helpers.hpp\"\n";
   output += "#include \"yasf/serializer.hpp\"\n";
+
+  set<string> additional_headers;
+  for (const auto& type : types) {
+    bee::insert_many(additional_headers, type->additional_serialize_headers());
+  }
+  for (const auto& header : additional_headers) {
+    output += F("#include \"$\"\n", header);
+  }
+
   output += "\n";
   output += "using PH = yasf::ParserHelper;\n";
   output += "\n";
-  output += format("namespace $ {\n", base_name);
+  output += F("namespace $ {{\n", base_name);
   output += "\n";
   for (const auto& type : types) {
     output += "////////////////////////////////////////////////////////////////"
               "////////////////\n";
-    output += format("// $\n", type->type_name());
+    output += F("// $\n", type->type_name());
     output += "//\n\n";
     output += type->gen_impl();
     output += "\n";

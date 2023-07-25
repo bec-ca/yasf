@@ -3,7 +3,6 @@
 #include "bee/format_memory.hpp"
 #include "bee/testing.hpp"
 
-using bee::print_line;
 using std::string;
 
 namespace yasf {
@@ -44,7 +43,7 @@ TEST(parse)
 {
   must(config, ConfigParser::parse_from_string("", example));
 
-  print_line(config->to_string_hum());
+  P(config->to_string_hum());
 }
 
 const string new_example = R"(
@@ -65,8 +64,8 @@ TEST(parse_new_syntax)
 {
   must(config, ConfigParser::parse_from_string("", new_example));
 
-  print_line("output:");
-  print_line(config->to_string_hum());
+  P("output:");
+  P(config->to_string_hum());
 }
 
 const string error_example = R"(
@@ -87,10 +86,10 @@ TEST(parse_error)
   auto resp = ConfigParser::parse_from_string("", error_example);
 
   if (resp.is_error()) {
-    print_line(resp.error());
+    P(resp.error());
   } else {
-    print_line("Expected error, but didn't get, parsed doc is:");
-    print_line(resp.value()->to_string_hum());
+    P("Expected error, but didn't get, parsed doc is:");
+    P(resp.value()->to_string_hum());
   }
 }
 

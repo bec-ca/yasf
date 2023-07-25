@@ -5,7 +5,7 @@
 #include "bee/testing.hpp"
 
 using namespace test_parser;
-using bee::print_line;
+
 using std::string;
 
 namespace yasf {
@@ -14,16 +14,16 @@ namespace {
 void run_test(const string& doc)
 {
   must(config, ConfigParser::parse_from_string("test.txt", doc));
-  print_line("original:");
-  print_line(config->to_string_hum());
+  P("original:");
+  P(config->to_string_hum());
   must(parsed, top::of_yasf_value(config));
   auto back = parsed.to_yasf_value();
-  print_line("round trip:");
-  print_line(back->to_string_hum());
-  print_line("round trip once more:");
+  P("round trip:");
+  P(back->to_string_hum());
+  P("round trip once more:");
   must(parsed_again, top::of_yasf_value(back));
-  print_line(parsed_again.to_yasf_value()->to_string_hum());
-  print_line("location: $", config->location());
+  P(parsed_again.to_yasf_value()->to_string_hum());
+  P("location: $", config->location());
 };
 
 void run_error_test(const string& doc)
@@ -31,9 +31,9 @@ void run_error_test(const string& doc)
   must(config, ConfigParser::parse_from_string("foobar.txt", doc));
   auto err = top::of_yasf_value(config);
   if (err.is_error()) {
-    print_line(err.error());
+    P(err.error());
   } else {
-    print_line("No error!!");
+    P("No error!!");
   }
 };
 

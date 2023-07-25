@@ -1,9 +1,9 @@
 #pragma once
 
-#include "type.hpp"
-
 #include <string>
 #include <vector>
+
+#include "type.hpp"
 
 namespace yasf {
 

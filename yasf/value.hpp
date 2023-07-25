@@ -1,13 +1,13 @@
 #pragma once
 
-#include "location.hpp"
-
-#include "bee/error.hpp"
-
 #include <memory>
 #include <optional>
 #include <variant>
 #include <vector>
+
+#include "location.hpp"
+
+#include "bee/error.hpp"
 
 namespace yasf {
 

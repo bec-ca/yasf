@@ -1,13 +1,13 @@
 #include "generator_main_lib.hpp"
 
+#include <filesystem>
+#include <optional>
+#include <string>
+
 #include "bee/file_writer.hpp"
 #include "bee/sub_process.hpp"
 #include "command/command_builder.hpp"
 #include "command/group_builder.hpp"
-
-#include <filesystem>
-#include <optional>
-#include <string>
 
 using bee::SubProcess;
 using command::Cmd;
@@ -21,27 +21,28 @@ namespace fs = std::filesystem;
 namespace yasf {
 namespace {
 
-bee::OrError<bee::Unit> write_to_file(
-  const string& filename, const string& content)
+bee::OrError<> write_to_file(const string& filename, const string& content)
 {
   bail_unit(
     bee::FileWriter::save_file(bee::FilePath::of_string(filename), content));
 
-  return SubProcess::run({.cmd = "clang-format", .args = {"-i", filename}});
+  return SubProcess::run(
+    {.cmd = bee::FilePath::of_string("clang-format"),
+     .args = {"-i", filename}});
 }
 
-bee::OrError<bee::Unit> write_code(
+bee::OrError<> write_code(
   const fs::path& output_dir, const string& base_name, const Definitions defs)
 {
   bail_unit(write_to_file(
-    output_dir / bee::format("$.hpp", base_name), defs.gen_decl(base_name)));
+    output_dir / F("$.hpp", base_name), defs.gen_decl(base_name)));
   bail_unit(write_to_file(
-    output_dir / bee::format("$.cpp", base_name), defs.gen_impl(base_name)));
+    output_dir / F("$.cpp", base_name), defs.gen_impl(base_name)));
 
-  return bee::unit;
+  return bee::ok();
 }
 
-bee::OrError<bee::Unit> generate_code(
+bee::OrError<> generate_code(
   const optional<string>& output_dir_opt, const optional<string>& base_name_opt)
 {
   string output_dir = output_dir_opt.value_or(".");
@@ -53,9 +54,9 @@ bee::OrError<bee::Unit> generate_code(
 
   auto ret = write_code(output_dir, base_name, defs);
   if (ret.is_error()) {
-    return bee::Error::format("Failed to generated code: $", ret.error());
+    return bee::Error::fmt("Failed to generated code: $", ret.error());
   }
-  return bee::unit;
+  return bee::ok();
 }
 
 Cmd gen_command()

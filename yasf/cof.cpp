@@ -155,8 +155,7 @@ bee::OrError<Value::ptr> Cof::raw_parse_file(const string& filename)
   return raw_parse_string(content);
 }
 
-bee::OrError<bee::Unit> Cof::raw_to_file(
-  const string& filename, const Value::ptr& value)
+bee::OrError<> Cof::raw_to_file(const string& filename, const Value::ptr& value)
 {
   return bee::FileWriter::save_file(
     bee::FilePath::of_string(filename), to_string(value));
@@ -188,9 +187,8 @@ string Cof::to_string(const Value::ptr& value)
 
 } // namespace yasf
 
-namespace bee {
-std::string to_string<yasf::Value::ptr>::convert(const yasf::Value::ptr& value)
+std::string bee::to_string_t<yasf::Value::ptr>::convert(
+  const yasf::Value::ptr& value)
 {
   return yasf::Cof::serialize(value);
 }
-} // namespace bee

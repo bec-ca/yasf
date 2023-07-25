@@ -1,10 +1,10 @@
 #pragma once
 
-#include "location.hpp"
-
 #include <string>
 #include <variant>
 #include <vector>
+
+#include "location.hpp"
 
 #include "bee/error.hpp"
 

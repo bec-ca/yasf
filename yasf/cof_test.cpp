@@ -1,10 +1,10 @@
-#include "bee/format_memory.hpp"
-#include "bee/testing.hpp"
 #include "cof.hpp"
 #include "config_parser.hpp"
 #include "test_parser.hpp"
 
-using bee::print_line;
+#include "bee/format_memory.hpp"
+#include "bee/testing.hpp"
+
 using std::string;
 
 namespace yasf {
@@ -13,9 +13,9 @@ namespace {
 void run_test(string doc)
 {
   must(config, ConfigParser::parse_from_string("", doc));
-  print_line("");
-  print_line(config->to_string_hum());
-  print_line(Cof::to_string(config));
+  P("");
+  P(config->to_string_hum());
+  P(Cof::to_string(config));
 };
 
 TEST(basic)
@@ -50,13 +50,13 @@ bar:
 
 void run_round_trip(string doc)
 {
-  print_line(doc);
+  P(doc);
   must(config, ConfigParser::parse_from_string("", doc));
   auto cof = Cof::to_string(config);
-  print_line(cof);
-  print_line("");
+  P(cof);
+  P("");
   must(parsed, Cof::raw_parse_string(cof));
-  print_line(parsed->to_string_hum());
+  P(parsed->to_string_hum());
 };
 
 TEST(basic_round_trip)
@@ -80,14 +80,14 @@ bar:
 TEST(top_round_trip)
 {
   auto run_round_trip = [](test_parser::top doc) {
-    print_line("Original: $", doc.to_yasf_value()->to_string_hum());
+    P("Original: $", doc.to_yasf_value()->to_string_hum());
     auto str = Cof::serialize(doc);
-    print_line("Cof serizlied: $", str);
+    P("Cof serizlied: $", str);
     must(parsed, Cof::raw_parse_string(str));
-    print_line("Config value from cof: $", parsed->to_string_hum());
+    P("Config value from cof: $", parsed->to_string_hum());
     must(config, Cof::deserialize<test_parser::top>(str));
-    print_line("Final back:", config.to_yasf_value()->to_string_hum());
-    print_line("-----------------------------");
+    P("Final back: $", config.to_yasf_value()->to_string_hum());
+    P("-----------------------------");
   };
   auto example = test_parser::top{.foos = {test_parser::foo{}}};
   run_round_trip(example);

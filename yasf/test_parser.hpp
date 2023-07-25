@@ -1,17 +1,17 @@
 #pragma once
 
-#include "bee/error.hpp"
-#include "yasf/serializer.hpp"
-#include "yasf/to_stringable_mixin.hpp"
-
 #include <set>
 #include <string>
 #include <variant>
 #include <vector>
 
+#include "bee/error.hpp"
+#include "yasf/serializer.hpp"
+#include "yasf/to_stringable_mixin.hpp"
+
 namespace test_parser {
 
-struct int_or_str {
+struct int_or_str : public yasf::ToStringableMixin<int_or_str> {
   using value_type = std::variant<int64_t, std::string>;
 
   value_type value;
@@ -19,6 +19,10 @@ struct int_or_str {
   int_or_str() noexcept = default;
   int_or_str(const value_type& value) noexcept;
   int_or_str(value_type&& value) noexcept;
+
+  template <std::convertible_to<value_type> U>
+  int_or_str(U&& value) noexcept : value(std::forward<U>(value))
+  {}
 
   static bee::OrError<int_or_str> of_yasf_value(
     const yasf::Value::ptr& config_value);

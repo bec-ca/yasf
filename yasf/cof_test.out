@@ -87,6 +87,17 @@ Config value from cof: foos:
       int: 0
 
 
-Final back:
+Final back: foos:
+  *
+    bar: 
+    eggs:
+    bool_field: false
+    int_field: 0
+    float_field: 0.000000
+    vector_int_field:
+    variant:
+      int: 0
+
+
 -----------------------------
 

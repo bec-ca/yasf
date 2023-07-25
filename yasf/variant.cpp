@@ -1,6 +1,5 @@
 #include "variant.hpp"
 
-using bee::format;
 using std::nullopt;
 using std::optional;
 using std::set;
@@ -48,8 +47,19 @@ struct Variant final : public CustomType {
   virtual set<string> additional_headers() const override
   {
     set<string> headers;
+    headers.insert("yasf/to_stringable_mixin.hpp");
     for (const auto& leg : legs) {
       bee::insert_many(headers, leg.type->additional_headers());
+    }
+
+    return headers;
+  }
+
+  virtual set<string> additional_serialize_headers() const override
+  {
+    set<string> headers;
+    for (const auto& leg : legs) {
+      bee::insert_many(headers, leg.type->additional_serialize_headers());
     }
 
     return headers;
@@ -77,24 +87,21 @@ string Variant::variant_type_name() const
   return output;
 }
 
-string Variant::parse_func_name() const
-{
-  return format("$::of_yasf_value", name);
-}
+string Variant::parse_func_name() const { return F("$::of_yasf_value", name); }
 
 string Variant::unparse_func_name() const
 {
-  return format("$::to_yasf_value", name);
+  return F("$::to_yasf_value", name);
 }
 
 string Variant::parse_expr(const string& value) const
 {
-  return format("yasf::des<$>($)", type_name(), value);
+  return F("yasf::des<$>($)", type_name(), value);
 }
 
 string Variant::unparse_expr(const string& value) const
 {
-  return format("yasf::ser<$>($)", type_name(), value);
+  return F("yasf::ser<$>($)", type_name(), value);
 }
 
 string Variant::unparse_expr_optional(const string& value) const
@@ -105,16 +112,20 @@ string Variant::unparse_expr_optional(const string& value) const
 string Variant::gen_decl() const
 {
   string output;
-  output += format("struct $ {\n", name);
-  output += format("using value_type = $;\n\n", variant_type_name());
+  output += F("struct $ : public yasf::ToStringableMixin<$> {{\n", name, name);
+  output += F("using value_type = $;\n\n", variant_type_name());
   output += "value_type value;\n\n";
-  output += format("$() noexcept = default;\n", name, name);
-  output += format("$(const value_type& value) noexcept;\n", name);
-  output += format("$(value_type&& value) noexcept;\n\n", name);
-  output += format(
-    "static bee::OrError<$> of_yasf_value(const yasf::Value::ptr& "
-    "config_value);\n\n",
-    name);
+  output += F("$() noexcept = default;\n", name);
+  output += F("$(const value_type& value) noexcept;\n", name);
+  output += F("$(value_type&& value) noexcept;\n\n", name);
+  output +=
+    F("template <std::convertible_to<value_type> U> $(U&& value) noexcept : "
+      "value(std::forward<U>(value)) {{}\n\n",
+      name);
+  output +=
+    F("static bee::OrError<$> of_yasf_value(const yasf::Value::ptr& "
+      "config_value);\n\n",
+      name);
 
   output += "template <class F>";
   output += "auto visit(F&& f) const {";
@@ -134,22 +145,22 @@ string Variant::gen_decl() const
 string Variant::gen_constructor() const
 {
   string output;
-  output += format(
-    "$::$(const value_type& value) noexcept : value(value) {}\n", name, name);
-  output += format(
-    "$::$(value_type&& value) noexcept : value(std::move(value)) {}\n",
-    name,
-    name);
+  output += F(
+    "$::$(const value_type& value) noexcept : value(value) {{}\n", name, name);
+  output +=
+    F("$::$(value_type&& value) noexcept : value(std::move(value)) {{}\n",
+      name,
+      name);
   return output;
 }
 
 string Variant::gen_parse_code() const
 {
   string output;
-  output += format(
-    "bee::OrError<$> $(const yasf::Value::ptr& arg_value) {\n",
-    name,
-    parse_func_name());
+  output +=
+    F("bee::OrError<$> $(const yasf::Value::ptr& arg_value) {{\n",
+      name,
+      parse_func_name());
   output += "auto value = arg_value;";
   output += "if (value->is_list() && value->list().size() == 1) { value = "
             "value->list()[0]; }";
@@ -164,8 +175,8 @@ string Variant::gen_parse_code() const
     } else {
       first = false;
     }
-    output += format("if (name == \"$\") {\n", leg.name);
-    output += format("return $;\n", leg.type->parse_expr("kv.value"));
+    output += F("if (name == \"$\") {{\n", leg.name);
+    output += F("return $;\n", leg.type->parse_expr("kv.value"));
     output += "}\n";
   }
   output += "else {\n";
@@ -179,7 +190,7 @@ string Variant::gen_unparse_code() const
 {
   string output;
 
-  output += format("yasf::Value::ptr $() const {\n", unparse_func_name());
+  output += F("yasf::Value::ptr $() const {{\n", unparse_func_name());
   output += "return visit([](const auto& leg) {";
   output += "using T = std::decay_t<decltype(leg)>;";
   bool first = true;
@@ -190,11 +201,11 @@ string Variant::gen_unparse_code() const
       first = false;
     }
     output +=
-      format("if constexpr (std::is_same_v<T, $>) {\n", leg.type->type_name());
-    output += format(
-      "return yasf::Value::create_key_value(\"$\", {$}, std::nullopt);",
-      leg.name,
-      leg.type->unparse_expr("leg"));
+      F("if constexpr (std::is_same_v<T, $>) {{\n", leg.type->type_name());
+    output +=
+      F("return yasf::Value::create_key_value(\"$\", {{$}, std::nullopt);",
+        leg.name,
+        leg.type->unparse_expr("leg"));
     output += "}\n";
   }
   output += "}\n";

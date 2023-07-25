@@ -2,14 +2,12 @@
 
 #include "bee/format.hpp"
 
-using bee::format;
 using std::nullopt;
 using std::optional;
 using std::set;
 using std::string;
 
 namespace yasf {
-
 namespace {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -20,7 +18,7 @@ struct Vector final : public Type {
  public:
   Vector(const Type::ptr& element_type)
       : element_type(element_type),
-        name(format("std::vector<$>", element_type->type_name()))
+        name(F("std::vector<$>", element_type->type_name()))
   {}
 
   virtual ~Vector() {}
@@ -37,6 +35,10 @@ struct Vector final : public Type {
   {
     return element_type->additional_headers();
   }
+  virtual set<string> additional_serialize_headers() const override
+  {
+    return element_type->additional_serialize_headers();
+  }
 
  private:
   const Type::ptr element_type;
@@ -45,17 +47,17 @@ struct Vector final : public Type {
 
 string Vector::parse_expr(const string& value) const
 {
-  return format("yasf::des<$>($)", type_name(), value);
+  return F("yasf::des<$>($)", type_name(), value);
 }
 
 string Vector::unparse_expr(const string& value) const
 {
-  return format("yasf::ser<$>($)", type_name(), value);
+  return F("yasf::ser<$>($)", type_name(), value);
 }
 
 string Vector::unparse_expr_optional(const string& value) const
 {
-  return format(
+  return F(
     "PH::of_vector_optional($, [](const auto& value){ return "
     "$; })",
     value,
@@ -74,5 +76,4 @@ Type::ptr make_vec(const Type::ptr& element)
 }
 
 } // namespace details
-
 } // namespace yasf

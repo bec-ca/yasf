@@ -4,7 +4,6 @@
 #include "bee/format_vector.hpp"
 #include "bee/testing.hpp"
 
-using bee::print_line;
 using std::string;
 
 namespace yasf {
@@ -14,10 +13,10 @@ void run_test(const string& document)
 {
   must(output, Tokenizer::tokenize("", document));
 
-  print_line("document:\n$*", document);
-  print_line("------");
-  print_line("Tokens:\n$", output);
-  print_line("----------------------------------------");
+  P("document:\n$*", document);
+  P("------");
+  P("Tokens:\n$", output);
+  P("----------------------------------------");
 }
 
 TEST(tokenize1)

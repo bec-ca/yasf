@@ -5,7 +5,7 @@ cpp_library:
   libs:
     /bee/file_reader
     /bee/file_writer
-    /bee/to_string
+    /bee/to_string_t
     serializer
     value
 
@@ -70,6 +70,14 @@ cpp_library:
   libs:
     /bee/format
     type
+
+cpp_library:
+  name: file_path_serializer
+  sources: file_path_serializer.cpp
+  headers: file_path_serializer.hpp
+  libs:
+    /bee/file_path
+    serializer
 
 gen_rule:
   name: generate_test_parser

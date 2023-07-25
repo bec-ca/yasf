@@ -1,11 +1,11 @@
 #pragma once
 
+#include <compare>
+#include <string>
+
 #include "of_stringable_mixin.hpp"
 
 #include "bee/string_mixin.hpp"
-
-#include <compare>
-#include <string>
 
 namespace yasf {
 

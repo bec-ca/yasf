@@ -1,4 +1,5 @@
 #include "to_stringable_mixin.hpp"
+
 #include "cof.hpp"
 
 using std::string;

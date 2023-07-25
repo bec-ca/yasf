@@ -19,10 +19,7 @@ TokenBase::TokenBase(string value) : _value(std::move(value)) {}
 
 KeyToken::KeyToken(string value) : TokenBase(std::move(value)) {}
 
-string KeyToken::to_string() const
-{
-  return bee::format("KeyToken($)", value());
-}
+string KeyToken::to_string() const { return F("KeyToken($)", value()); }
 
 ////////////////////////////////////////////////////////////////////////////////
 // AtomToken
@@ -30,10 +27,7 @@ string KeyToken::to_string() const
 
 AtomToken::AtomToken(string value) : TokenBase(std::move(value)) {}
 
-string AtomToken::to_string() const
-{
-  return bee::format("AtomToken($)", value());
-}
+string AtomToken::to_string() const { return F("AtomToken($)", value()); }
 
 ////////////////////////////////////////////////////////////////////////////////
 // IndentToken
@@ -41,10 +35,7 @@ string AtomToken::to_string() const
 
 IndentToken::IndentToken(string value) : TokenBase(std::move(value)) {}
 
-string IndentToken::to_string() const
-{
-  return bee::format("IndentToken($)", indent());
-}
+string IndentToken::to_string() const { return F("IndentToken($)", indent()); }
 
 int IndentToken::indent() const { return value().size(); }
 
@@ -54,7 +45,7 @@ int IndentToken::indent() const { return value().size(); }
 
 BulletToken::BulletToken(string value) : TokenBase(std::move(value)) {}
 
-string BulletToken::to_string() const { return bee::format("BulletToken()"); }
+string BulletToken::to_string() const { return F("BulletToken()"); }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Token
@@ -101,9 +92,7 @@ const BulletToken& Token::bullet_token() const
 string Token::to_string() const
 {
   return visit(
-    [&](const auto& t) -> string {
-      return bee::format("Token($ $)", t, location());
-    },
+    [&](const auto& t) -> string { return F("Token($ $)", t, location()); },
     variant());
 }
 

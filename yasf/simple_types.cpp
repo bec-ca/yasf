@@ -1,10 +1,9 @@
 #include "simple_types.hpp"
 
-#include "bee/format.hpp"
-
 #include <string>
 
-using bee::format;
+#include "bee/format.hpp"
+
 using std::make_shared;
 using std::nullopt;
 using std::optional;
@@ -35,21 +34,25 @@ struct Float final : public Type {
   virtual bool has_optional_default() const override { return false; }
 
   virtual set<string> additional_headers() const override { return {}; }
+  virtual set<string> additional_serialize_headers() const override
+  {
+    return {};
+  }
 };
 
 string Float::parse_expr(const string& value) const
 {
-  return format("PH::to_float($)", value);
+  return F("PH::to_float($)", value);
 }
 
 string Float::unparse_expr(const string& value) const
 {
-  return format("PH::of_float($)", value);
+  return F("PH::of_float($)", value);
 }
 
 string Float::unparse_expr_optional(const string& value) const
 {
-  return format("PH::of_float_optional($)", value);
+  return F("PH::of_float_optional($)", value);
 }
 
 optional<string> Float::default_value() const { return "0"; }
@@ -74,21 +77,25 @@ struct Int final : public Type {
   virtual bool has_optional_default() const override { return false; }
 
   virtual set<string> additional_headers() const override { return {}; }
+  virtual set<string> additional_serialize_headers() const override
+  {
+    return {};
+  }
 };
 
 string Int::parse_expr(const string& value) const
 {
-  return format("PH::to_int($)", value);
+  return F("PH::to_int($)", value);
 }
 
 string Int::unparse_expr(const string& value) const
 {
-  return format("PH::of_int($)", value);
+  return F("PH::of_int($)", value);
 }
 
 string Int::unparse_expr_optional(const string& value) const
 {
-  return format("PH::of_int_optional($)", value);
+  return F("PH::of_int_optional($)", value);
 }
 
 optional<string> Int::default_value() const { return "0"; }
@@ -113,21 +120,25 @@ struct Bool final : public Type {
   virtual bool has_optional_default() const override { return true; }
 
   virtual set<string> additional_headers() const override { return {}; }
+  virtual set<string> additional_serialize_headers() const override
+  {
+    return {};
+  }
 };
 
 string Bool::parse_expr(const string& value) const
 {
-  return format("PH::to_bool($)", value);
+  return F("PH::to_bool($)", value);
 }
 
 string Bool::unparse_expr(const string& value) const
 {
-  return format("PH::of_bool($)", value);
+  return F("PH::of_bool($)", value);
 }
 
 string Bool::unparse_expr_optional(const string& value) const
 {
-  return format("PH::of_bool_optional($)", value);
+  return F("PH::of_bool_optional($)", value);
 }
 
 optional<string> Bool::default_value() const { return "false"; }
@@ -152,18 +163,22 @@ struct String final : public Type {
   virtual bool has_optional_default() const override { return false; }
 
   virtual set<string> additional_headers() const override { return {}; }
+  virtual set<string> additional_serialize_headers() const override
+  {
+    return {};
+  }
 
  private:
 };
 
 string String::parse_expr(const string& value) const
 {
-  return format("yasf::des<$>($)", type_name(), value);
+  return F("yasf::des<$>($)", type_name(), value);
 }
 
 string String::unparse_expr(const string& value) const
 {
-  return format("yasf::ser<$>($)", type_name(), value);
+  return F("yasf::ser<$>($)", type_name(), value);
 }
 
 string String::unparse_expr_optional(const string& value) const
@@ -191,6 +206,7 @@ SimpleType::operator Type::ptr() const
   case Kind::Str:
     return make_shared<String>();
   }
+  assert(false);
 }
 
 } // namespace yasf

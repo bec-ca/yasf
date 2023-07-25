@@ -22,6 +22,7 @@ struct Type {
   virtual bool has_optional_default() const = 0;
 
   virtual std::set<std::string> additional_headers() const = 0;
+  virtual std::set<std::string> additional_serialize_headers() const = 0;
 };
 
 struct CustomType : public Type {

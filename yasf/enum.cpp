@@ -1,10 +1,9 @@
 #include "enum.hpp"
 
-#include "bee/format.hpp"
-
 #include <string>
 
-using bee::format;
+#include "bee/format.hpp"
+
 using std::make_shared;
 using std::nullopt;
 using std::optional;
@@ -42,6 +41,10 @@ struct Enum final : public CustomType {
   string gen_unparse_code() const;
 
   virtual set<string> additional_headers() const override { return {}; }
+  virtual set<string> additional_serialize_headers() const override
+  {
+    return {};
+  }
 
  private:
   const string name;
@@ -50,12 +53,12 @@ struct Enum final : public CustomType {
 
 string Enum::parse_expr(const string& value) const
 {
-  return format("yasf::des<$>($)", type_name(), value);
+  return F("yasf::des<$>($)", type_name(), value);
 }
 
 string Enum::unparse_expr(const string& value) const
 {
-  return format("yasf::ser<$>($)", type_name(), value);
+  return F("yasf::ser<$>($)", type_name(), value);
 }
 
 string Enum::unparse_expr_optional(const string& value) const
@@ -66,18 +69,18 @@ string Enum::unparse_expr_optional(const string& value) const
 string Enum::gen_decl() const
 {
   string output;
-  output += format("struct $ {\n", name);
+  output += F("struct $ {{\n", name);
   output += "enum Value {\n";
-  for (const auto& value : values) { output += format("$,\n", value); }
+  for (const auto& value : values) { output += F("$,\n", value); }
   output += "};\n";
-  output += format("constexpr $(Value v) : _value(v) {};\n", name);
-  output += format("constexpr operator Value() const { return _value; };");
-  output += format("explicit operator bool() const = delete;");
+  output += F("constexpr $(Value v) : _value(v) {{};\n", name);
+  output += F("constexpr operator Value() const {{ return _value; };");
+  output += F("explicit operator bool() const = delete;");
   output += "yasf::Value::ptr to_yasf_value() const;\n";
-  output += format(
-    "static bee::OrError<$> of_yasf_value(const yasf::Value::ptr& "
-    "config_value);\n\n",
-    name);
+  output +=
+    F("static bee::OrError<$> of_yasf_value(const yasf::Value::ptr& "
+      "config_value);\n\n",
+      name);
   output += "const char* to_string() const;\n";
   output += "private:\n";
   output += "Value _value;\n";
@@ -88,11 +91,11 @@ string Enum::gen_decl() const
 string Enum::gen_parse_code() const
 {
   string output;
-  output += format(
-    "bee::OrError<$> $::of_yasf_value(const yasf::Value::ptr& input_value) "
-    "{\n",
-    name,
-    name);
+  output +=
+    F("bee::OrError<$> $::of_yasf_value(const yasf::Value::ptr& input_value) "
+      "{{\n",
+      name,
+      name);
   output += "bail(str_value, yasf::des<std::string>(input_value));\n";
   bool first = true;
   for (const auto& value : values) {
@@ -101,8 +104,8 @@ string Enum::gen_parse_code() const
     } else {
       first = false;
     }
-    output += format("if (str_value == \"$\") {\n", value);
-    output += format("return $;\n", value);
+    output += F("if (str_value == \"$\") {{\n", value);
+    output += F("return $;\n", value);
     output += "}\n";
   }
   output += "else {\n";
@@ -116,14 +119,14 @@ string Enum::gen_unparse_code() const
 {
   string output;
 
-  output += format("const char* $::to_string() const {\n", name);
+  output += F("const char* $::to_string() const {{\n", name);
   output += "switch(_value) {";
   for (const auto& value : values) {
-    output += format("case $: return \"$\";", value, value);
+    output += F("case $: return \"$\";", value, value);
   }
   output += "}\n";
   output += "}\n\n";
-  output += format("yasf::Value::ptr $::to_yasf_value() const {\n", name);
+  output += F("yasf::Value::ptr $::to_yasf_value() const {{\n", name);
   output += "return yasf::ser<std::string>(to_string());";
   output += "}\n";
   return output;

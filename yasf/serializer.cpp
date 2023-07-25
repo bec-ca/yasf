@@ -26,7 +26,7 @@ bee::OrError<std::string> Serialize<string>::deserialize(
   if (value->is_list()) {
     const auto& elements = value->list();
     if (elements.size() != 1) {
-      return bee::Error::format(
+      return bee::Error::fmt(
         "Expected a single value list to convert to a string, got $",
         elements.size());
     }
@@ -34,7 +34,7 @@ bee::OrError<std::string> Serialize<string>::deserialize(
   } else if (value->is_atom()) {
     return value->atom();
   } else {
-    return bee::Error::format(
+    return bee::Error::fmt(
       "Cannot convert a key value into a string: '$'", value->to_string_hum());
   }
 }

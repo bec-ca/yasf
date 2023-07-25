@@ -4,9 +4,10 @@
 #include <string>
 #include <vector>
 
-#include "bee/error.hpp"
 #include "serializer.hpp"
 #include "value.hpp"
+
+#include "bee/error.hpp"
 
 namespace yasf {
 
@@ -46,7 +47,7 @@ struct ParserHelper {
   template <class... Ts>
   static bee::Error err(const char* fmt, const Value::ptr& value, Ts&&... args)
   {
-    return make_error_msg(bee::format(fmt, std::forward<Ts>(args)...), value);
+    return make_error_msg(F(fmt, std::forward<Ts>(args)...), value);
   }
 };
 

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "bee/to_string.hpp"
 #include "serializer.hpp"
 #include "value.hpp"
+
+#include "bee/to_string_t.hpp"
 
 namespace yasf {
 
@@ -12,7 +13,7 @@ struct Cof {
 
   static bee::OrError<Value::ptr> raw_parse_file(const std::string& filename);
 
-  static bee::OrError<bee::Unit> raw_to_file(
+  static bee::OrError<> raw_to_file(
     const std::string& filename, const Value::ptr& value);
 
   static std::string to_string(const Value::ptr& value);
@@ -38,7 +39,7 @@ struct Cof {
   }
 
   template <class T>
-  static bee::OrError<bee::Unit> serialize_file(
+  static bee::OrError<> serialize_file(
     const std::string& filename, const T& content)
   {
     return raw_to_file(filename, ser<T>(content));
@@ -47,8 +48,6 @@ struct Cof {
 
 } // namespace yasf
 
-namespace bee {
-template <> struct to_string<yasf::Value::ptr> {
+template <> struct bee::to_string_t<yasf::Value::ptr> {
   static std::string convert(const yasf::Value::ptr& value);
 };
-} // namespace bee

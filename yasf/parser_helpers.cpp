@@ -14,7 +14,7 @@ bee::OrError<bool> ParserHelper::to_bool(const Value::ptr& config_value)
   if (config_value->is_list()) {
     const auto& elements = config_value->list();
     if (elements.size() != 1) {
-      return bee::Error::format(
+      return bee::Error::fmt(
         "Expected a single value list to convert to a bool, got $",
         elements.size());
     }
@@ -26,7 +26,7 @@ bee::OrError<bool> ParserHelper::to_bool(const Value::ptr& config_value)
     } else if (value == "false") {
       return false;
     } else {
-      return bee::Error::format("Unexpected value $ for bool type", value);
+      return bee::Error::fmt("Unexpected value $ for bool type", value);
     }
   } else {
     return bee::Error("Cannot convert a key value into a bool");
@@ -52,7 +52,7 @@ bee::OrError<int64_t> ParserHelper::to_int(const Value::ptr& config_value)
   if (config_value->is_list()) {
     const auto& elements = config_value->list();
     if (elements.size() != 1) {
-      return bee::Error::format(
+      return bee::Error::fmt(
         "Expected a single value list to convert to a int, got $",
         elements.size());
     }
@@ -84,7 +84,7 @@ bee::OrError<double> ParserHelper::to_float(const Value::ptr& config_value)
   if (config_value->is_list()) {
     const auto& elements = config_value->list();
     if (elements.size() != 1) {
-      return bee::Error::format(
+      return bee::Error::fmt(
         "Expected a single value list to convert to a double, got $",
         elements.size());
     }
@@ -120,14 +120,14 @@ string ParserHelper::location(const Value::ptr& v)
   if (const auto& loc = v->location()) {
     return loc->hum();
   } else {
-    return "";
+    return "<unknown>";
   }
 }
 
 bee::Error ParserHelper::make_error_msg(
   const std::string& msg, const Value::ptr& value)
 {
-  return bee::Error::format(
+  return bee::Error::fmt(
     "$: $ in '$'", location(value), msg, Cof::serialize(value));
 }
 

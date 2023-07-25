@@ -1,10 +1,10 @@
 #pragma once
 
+#include <string>
+
 #include "type.hpp"
 
 #include "bee/util.hpp"
-
-#include <string>
 
 namespace yasf {
 

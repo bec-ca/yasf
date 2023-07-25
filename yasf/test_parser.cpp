@@ -6,6 +6,7 @@
 #include "bee/util.hpp"
 #include "yasf/parser_helpers.hpp"
 #include "yasf/serializer.hpp"
+#include "yasf/to_stringable_mixin.hpp"
 
 using PH = yasf::ParserHelper;
 
@@ -96,7 +97,7 @@ yasf::Value::ptr Color::to_yasf_value() const
 bee::OrError<foo> foo::of_yasf_value(const yasf::Value::ptr& value)
 {
   if (!value->is_list()) {
-    return PH::err("$: Expected list for record", (value));
+    return PH::err("Record expected a list, but got something else", value);
   }
 
   std::optional<std::string> output_bar;
@@ -251,7 +252,7 @@ yasf::Value::ptr foo::to_yasf_value() const
 bee::OrError<top> top::of_yasf_value(const yasf::Value::ptr& value)
 {
   if (!value->is_list()) {
-    return PH::err("$: Expected list for record", (value));
+    return PH::err("Record expected a list, but got something else", value);
   }
 
   std::optional<std::vector<foo>> output_foos;

@@ -1,11 +1,12 @@
 #pragma once
 
-#include "bee/span.hpp"
-#include "bee/time.hpp"
-#include "value.hpp"
-
 #include <map>
 #include <set>
+
+#include "value.hpp"
+
+#include "bee/span.hpp"
+#include "bee/time.hpp"
 
 namespace yasf {
 
@@ -259,7 +260,7 @@ template <class... Ts> struct Serialize<std::tuple<Ts...>> {
   template <class T> static T _parse_one(const Value::ptr& v)
   {
     auto r = des<T>(v);
-    if (r.is_error()) { throw r.error(); }
+    if (r.is_error()) { r.error(); }
     return std::move(r.value());
   }
 
@@ -270,7 +271,7 @@ template <class... Ts> struct Serialize<std::tuple<Ts...>> {
     auto lst = v->list();
     try {
       return value_type{_parse_one<Ts>(lst[I])...};
-    } catch (const bee::Error& e) {
+    } catch (const std::exception& e) {
       return e;
     }
   }

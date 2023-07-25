@@ -6,9 +6,10 @@
 #include <variant>
 #include <vector>
 
+#include "tokenizer.hpp"
+
 #include "bee/file_reader.hpp"
 #include "bee/util.hpp"
-#include "tokenizer.hpp"
 
 using std::nullopt;
 using std::optional;
@@ -71,7 +72,7 @@ bee::OrError<Value::ptr> parse_key_value(TokenReader& reader, int parent_indent)
     const Token& token = reader.pop();
     current_indent = token.indent_token().indent();
     if (current_indent <= parent_indent) {
-      return bee::Error::format(
+      return bee::Error::fmt(
         "$: Key should be either on the same line as parent or it should "
         "be "
         "more indented than parent",
@@ -81,7 +82,7 @@ bee::OrError<Value::ptr> parse_key_value(TokenReader& reader, int parent_indent)
 
   const Token& token = reader.pop();
   if (!token.is_key()) {
-    return bee::Error::format(
+    return bee::Error::fmt(
       "$: Expected key token", reader.peek().location().hum());
   }
   const KeyToken& key_token = token.key_token();
@@ -118,7 +119,7 @@ bee::OrError<Value::ptr> parse_list(TokenReader& reader, int parent_indent)
         if (new_indent < current_indent) {
           break;
         } else if (new_indent > current_indent) {
-          return bee::Error::format(
+          return bee::Error::fmt(
             "$: Unexpected indentation, expected $ spaces, got $",
             token.location().hum(),
             current_indent,
