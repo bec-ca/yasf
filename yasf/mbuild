@@ -1,4 +1,13 @@
 cpp_library:
+  name: clang_format
+  sources: clang_format.cpp
+  headers: clang_format.hpp
+  libs:
+    /bee/error
+    /bee/file_path
+    /bee/sub_process
+
+cpp_library:
   name: cof
   sources: cof.cpp
   headers: cof.hpp
@@ -111,9 +120,10 @@ cpp_library:
   headers: generator_main_lib.hpp
   libs:
     /bee/file_writer
-    /bee/sub_process
     /command/command_builder
+    /command/file_path
     /command/group_builder
+    clang_format
     definitions
 
 cpp_library:

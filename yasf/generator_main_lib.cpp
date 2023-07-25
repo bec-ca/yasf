@@ -4,35 +4,32 @@
 #include <optional>
 #include <string>
 
+#include "clang_format.hpp"
+
 #include "bee/file_writer.hpp"
-#include "bee/sub_process.hpp"
 #include "command/command_builder.hpp"
+#include "command/file_path.hpp"
 #include "command/group_builder.hpp"
 
-using bee::SubProcess;
+using bee::FilePath;
 using command::Cmd;
 using command::CommandBuilder;
 using command::GroupBuilder;
 using std::optional;
 using std::string;
 
-namespace fs = std::filesystem;
-
 namespace yasf {
 namespace {
 
-bee::OrError<> write_to_file(const string& filename, const string& content)
+bee::OrError<> write_to_file(const FilePath& filename, const string& content)
 {
-  bail_unit(
-    bee::FileWriter::save_file(bee::FilePath::of_string(filename), content));
+  bail_unit(bee::FileWriter::save_file(filename, content));
 
-  return SubProcess::run(
-    {.cmd = bee::FilePath::of_string("clang-format"),
-     .args = {"-i", filename}});
+  return ClangFormat::format_file(filename);
 }
 
 bee::OrError<> write_code(
-  const fs::path& output_dir, const string& base_name, const Definitions defs)
+  const FilePath& output_dir, const string& base_name, const Definitions defs)
 {
   bail_unit(write_to_file(
     output_dir / F("$.hpp", base_name), defs.gen_decl(base_name)));
@@ -43,9 +40,10 @@ bee::OrError<> write_code(
 }
 
 bee::OrError<> generate_code(
-  const optional<string>& output_dir_opt, const optional<string>& base_name_opt)
+  const optional<FilePath>& output_dir_opt,
+  const optional<string>& base_name_opt)
 {
-  string output_dir = output_dir_opt.value_or(".");
+  FilePath output_dir = output_dir_opt.value_or(FilePath::of_string("."));
 
   if (!base_name_opt) { return bee::Error("No basename provided"); }
   string base_name = base_name_opt.value();
@@ -64,7 +62,7 @@ Cmd gen_command()
   using namespace command::flags;
   auto builder = CommandBuilder("Generate code");
   auto base_name = builder.optional("--base-name", string_flag);
-  auto output_dir = builder.optional("--output-dir", string_flag);
+  auto output_dir = builder.optional("--output-dir", file_path);
   return builder.run([=]() { return generate_code(*output_dir, *base_name); });
 }
 
