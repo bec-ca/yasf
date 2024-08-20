@@ -2,12 +2,14 @@
 
 #include <string>
 
+#include "bee/file_path.hpp"
+
 namespace yasf {
 
 struct Location {
   int line;
   int col;
-  std::string filename;
+  bee::FilePath filename;
 
   std::string hum() const;
 

@@ -70,11 +70,11 @@ Original: foos:
     int_field: 0
     float_field: 0.000000
     vector_int_field:
-    variant:
+    variant_field:
       int: 0
 
 
-Cof serizlied: [foos:[[bar:'' eggs:[] bool_field:false int_field:0 float_field:0.000000 vector_int_field:[] variant:int:0]]]
+Cof serizlied: [foos:[[bar:'' eggs:[] bool_field:false int_field:0 float_field:0.000000 vector_int_field:[] variant_field:int:0]]]
 Config value from cof: foos:
   *
     bar: 
@@ -83,7 +83,7 @@ Config value from cof: foos:
     int_field: 0
     float_field: 0.000000
     vector_int_field:
-    variant:
+    variant_field:
       int: 0
 
 
@@ -95,7 +95,7 @@ Final back: foos:
     int_field: 0
     float_field: 0.000000
     vector_int_field:
-    variant:
+    variant_field:
       int: 0
 
 

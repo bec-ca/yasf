@@ -156,15 +156,16 @@ bee::OrError<Value::ptr> parse_from_tokens(const vector<Token>& tokens)
 }
 
 bee::OrError<Value::ptr> ConfigParser::parse_from_string(
-  const string& filename, const string& content)
+  const bee::FilePath& filename, const string& content)
 {
   bail(tokens, Tokenizer::tokenize(filename, content));
   return parse_from_tokens(tokens);
 }
 
-bee::OrError<Value::ptr> ConfigParser::parse_from_file(const string& filename)
+bee::OrError<Value::ptr> ConfigParser::parse_from_file(
+  const bee::FilePath& filename)
 {
-  bail(content, bee::FileReader::read_file(bee::FilePath::of_string(filename)));
+  bail(content, bee::FileReader::read_file(filename));
   return parse_from_string(filename, content);
 }
 

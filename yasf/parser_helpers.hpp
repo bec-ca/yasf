@@ -7,7 +7,7 @@
 #include "serializer.hpp"
 #include "value.hpp"
 
-#include "bee/error.hpp"
+#include "bee/or_error.hpp"
 
 namespace yasf {
 

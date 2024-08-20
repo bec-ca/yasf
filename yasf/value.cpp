@@ -1,5 +1,7 @@
 #include "value.hpp"
 
+#include <cassert>
+
 using std::optional;
 using std::string;
 using std::vector;
@@ -59,34 +61,6 @@ string pretty_print(const Value& value, int level, bool in_list)
 }
 
 } // namespace
-
-Value::Value(string value, optional<Location> loc)
-    : _variant(Atom{std::move(value)}), _loc(std::move(loc))
-{}
-
-Value::Value(vector<ptr> values, optional<Location> loc)
-    : _variant(List{std::move(values)}), _loc(std::move(loc))
-{}
-
-Value::Value(string key, ptr value, optional<Location> loc)
-    : _variant(KeyValue{std::move(key), std::move(value)}), _loc(std::move(loc))
-{}
-
-Value::ptr Value::create_atom(string value, optional<Location> loc)
-{
-  return make_shared<Value>(std::move(value), std::move(loc));
-}
-
-Value::ptr Value::create_list(std::vector<ptr> values, optional<Location> loc)
-{
-  return make_shared<Value>(std::move(values), std::move(loc));
-}
-
-Value::ptr Value::create_key_value(
-  string key, ptr value, optional<Location> loc)
-{
-  return make_shared<Value>(std::move(key), std::move(value), std::move(loc));
-}
 
 bool Value::is_list() const { return holds_alternative<List>(_variant); }
 bool Value::is_atom() const { return holds_alternative<Atom>(_variant); }

@@ -1,8 +1,8 @@
 #include "cof.hpp"
 #include "config_parser.hpp"
-#include "test_parser.hpp"
+#include "example.generated.hpp"
 
-#include "bee/format_memory.hpp"
+#include "bee/format_ptr.hpp"
 #include "bee/testing.hpp"
 
 using std::string;
@@ -12,7 +12,7 @@ namespace {
 
 void run_test(string doc)
 {
-  must(config, ConfigParser::parse_from_string("", doc));
+  must(config, ConfigParser::parse_from_string(bee::FilePath(""), doc));
   P("");
   P(config->to_string_hum());
   P(Cof::to_string(config));
@@ -51,7 +51,7 @@ bar:
 void run_round_trip(string doc)
 {
   P(doc);
-  must(config, ConfigParser::parse_from_string("", doc));
+  must(config, ConfigParser::parse_from_string(bee::FilePath(""), doc));
   auto cof = Cof::to_string(config);
   P(cof);
   P("");
@@ -79,17 +79,17 @@ bar:
 
 TEST(top_round_trip)
 {
-  auto run_round_trip = [](test_parser::top doc) {
+  auto run_round_trip = [](example::top doc) {
     P("Original: $", doc.to_yasf_value()->to_string_hum());
     auto str = Cof::serialize(doc);
     P("Cof serizlied: $", str);
     must(parsed, Cof::raw_parse_string(str));
     P("Config value from cof: $", parsed->to_string_hum());
-    must(config, Cof::deserialize<test_parser::top>(str));
+    must(config, Cof::deserialize<example::top>(str));
     P("Final back: $", config.to_yasf_value()->to_string_hum());
     P("-----------------------------");
   };
-  auto example = test_parser::top{.foos = {test_parser::foo{}}};
+  auto example = example::top{.foos = {example::foo{}}};
   run_round_trip(example);
 }
 

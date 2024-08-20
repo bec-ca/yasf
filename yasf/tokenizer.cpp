@@ -186,7 +186,7 @@ CharType get_char_type(char c)
 }
 
 bee::OrError<vector<Token>> Tokenizer::tokenize(
-  const string& filename, const string& content)
+  const bee::FilePath& filename, const string& content)
 {
   vector<Token> output;
   State state = State::indent;

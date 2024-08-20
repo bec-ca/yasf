@@ -149,16 +149,16 @@ bee::OrError<Value::ptr> Cof::raw_parse_string(const string& str)
   return output;
 }
 
-bee::OrError<Value::ptr> Cof::raw_parse_file(const string& filename)
+bee::OrError<Value::ptr> Cof::raw_parse_file(const bee::FilePath& filename)
 {
-  bail(content, bee::FileReader::read_file(bee::FilePath::of_string(filename)));
+  bail(content, bee::FileReader::read_file(filename));
   return raw_parse_string(content);
 }
 
-bee::OrError<> Cof::raw_to_file(const string& filename, const Value::ptr& value)
+bee::OrError<> Cof::raw_to_file(
+  const bee::FilePath& filename, const Value::ptr& value)
 {
-  return bee::FileWriter::save_file(
-    bee::FilePath::of_string(filename), to_string(value));
+  return bee::FileWriter::write_file(filename, to_string(value));
 }
 
 string Cof::to_string(const Value::ptr& value)

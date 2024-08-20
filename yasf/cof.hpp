@@ -3,6 +3,7 @@
 #include "serializer.hpp"
 #include "value.hpp"
 
+#include "bee/file_path.hpp"
 #include "bee/to_string_t.hpp"
 
 namespace yasf {
@@ -11,10 +12,10 @@ struct Cof {
  public:
   static bee::OrError<Value::ptr> raw_parse_string(const std::string& content);
 
-  static bee::OrError<Value::ptr> raw_parse_file(const std::string& filename);
+  static bee::OrError<Value::ptr> raw_parse_file(const bee::FilePath& filename);
 
   static bee::OrError<> raw_to_file(
-    const std::string& filename, const Value::ptr& value);
+    const bee::FilePath& filename, const Value::ptr& value);
 
   static std::string to_string(const Value::ptr& value);
 
@@ -27,22 +28,22 @@ struct Cof {
 
   template <class T, class... Args>
   static bee::OrError<T> deserialize_file(
-    const std::string& filename, Args&&... args)
+    const bee::FilePath& filename, Args&&... args)
   {
     bail(parsed, raw_parse_file(filename));
     return des<T>(parsed, std::forward<Args>(args)...);
   }
 
-  template <class T> static std::string serialize(const T& content)
+  template <class T> static std::string serialize(T&& content)
   {
-    return to_string(ser<T>(content));
+    return to_string(ser(std::forward<T>(content)));
   }
 
   template <class T>
   static bee::OrError<> serialize_file(
-    const std::string& filename, const T& content)
+    const bee::FilePath& filename, T&& content)
   {
-    return raw_to_file(filename, ser<T>(content));
+    return raw_to_file(filename, ser(std::forward<T>(content)));
   }
 };
 

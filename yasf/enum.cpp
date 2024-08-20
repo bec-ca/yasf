@@ -19,8 +19,8 @@ namespace yasf {
 
 struct Enum final : public CustomType {
  public:
-  Enum(string&& name, vector<string>&& values)
-      : name(std::move(name)), values(std::move(values))
+  Enum(const string& name, const vector<string>& values)
+      : name(name), values(values)
   {}
 
   virtual ~Enum() {}
@@ -41,10 +41,6 @@ struct Enum final : public CustomType {
   string gen_unparse_code() const;
 
   virtual set<string> additional_headers() const override { return {}; }
-  virtual set<string> additional_serialize_headers() const override
-  {
-    return {};
-  }
 
  private:
   const string name;
@@ -58,7 +54,7 @@ string Enum::parse_expr(const string& value) const
 
 string Enum::unparse_expr(const string& value) const
 {
-  return F("yasf::ser<$>($)", type_name(), value);
+  return F("yasf::ser($)", value);
 }
 
 string Enum::unparse_expr_optional(const string& value) const
@@ -73,8 +69,8 @@ string Enum::gen_decl() const
   output += "enum Value {\n";
   for (const auto& value : values) { output += F("$,\n", value); }
   output += "};\n";
-  output += F("constexpr $(Value v) : _value(v) {{};\n", name);
-  output += F("constexpr operator Value() const {{ return _value; };");
+  output += F("constexpr $(Value v) : _value(v) {{}\n", name);
+  output += F("constexpr operator Value() const {{ return _value; }");
   output += F("explicit operator bool() const = delete;");
   output += "yasf::Value::ptr to_yasf_value() const;\n";
   output +=
@@ -127,7 +123,7 @@ string Enum::gen_unparse_code() const
   output += "}\n";
   output += "}\n\n";
   output += F("yasf::Value::ptr $::to_yasf_value() const {{\n", name);
-  output += "return yasf::ser<std::string>(to_string());";
+  output += "return yasf::ser(to_string());";
   output += "}\n";
   return output;
 }
@@ -141,10 +137,9 @@ optional<string> Enum::default_value() const { return nullopt; }
 
 namespace details {
 CustomType::ptr make_enum_type(
-  const char* name, const std::vector<const char*>& legs)
+  const std::string& name, const std::vector<std::string>& legs)
 {
-  vector<string> legs_str(legs.begin(), legs.end());
-  return make_shared<Enum>(name, std::move(legs_str));
+  return make_shared<Enum>(name, legs);
 }
 
 } // namespace details

@@ -1,6 +1,6 @@
 #include "config_parser.hpp"
 
-#include "bee/format_memory.hpp"
+#include "bee/format_ptr.hpp"
 #include "bee/testing.hpp"
 
 using std::string;
@@ -41,7 +41,7 @@ empty_list_at_the_end:)";
 
 TEST(parse)
 {
-  must(config, ConfigParser::parse_from_string("", example));
+  must(config, ConfigParser::parse_from_string(bee::FilePath(""), example));
 
   P(config->to_string_hum());
 }
@@ -62,7 +62,7 @@ end:
 
 TEST(parse_new_syntax)
 {
-  must(config, ConfigParser::parse_from_string("", new_example));
+  must(config, ConfigParser::parse_from_string(bee::FilePath(""), new_example));
 
   P("output:");
   P(config->to_string_hum());
@@ -83,7 +83,7 @@ other:
 
 TEST(parse_error)
 {
-  auto resp = ConfigParser::parse_from_string("", error_example);
+  auto resp = ConfigParser::parse_from_string(bee::FilePath(""), error_example);
 
   if (resp.is_error()) {
     P(resp.error());

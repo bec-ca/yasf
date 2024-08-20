@@ -1,0 +1,97 @@
+cpp_library:
+  name: code
+  sources: code.cpp
+  headers: code.hpp
+  libs:
+    /bee/file_path
+    /bee/format
+    /bee/string_util
+
+cpp_library:
+  name: codegen
+  sources: codegen.cpp
+  headers: codegen.hpp
+  libs:
+    /bee/concepts
+    /bee/file_path
+    /bee/format
+    /bee/or_error
+    /clang_format/clang_format
+    /yasf/core_types
+    /yasf/definitions
+    /yasf/enum
+    /yasf/record
+    /yasf/simple_types
+    /yasf/type
+    /yasf/variant
+    /yasf/vec
+    code
+
+cpp_test:
+  name: codegen_test
+  sources: codegen_test.cpp
+  libs:
+    /bee/testing
+    codegen
+  output: codegen_test.out
+
+cpp_library:
+  name: compiler
+  sources: compiler.cpp
+  headers: compiler.hpp
+  libs:
+    /bee/file_path
+    /bee/file_writer
+    /bee/or_error
+    /clang_format/clang_format
+    codegen
+    dsl_parser
+
+cpp_library:
+  name: dsl_parser
+  sources: dsl_parser.cpp
+  headers: dsl_parser.hpp
+  libs:
+    /bee/file_path
+    /bee/file_reader
+    /bee/or_error
+    /tokenizer/token_reader
+    /tokenizer/tokenizer
+    /tokenizer/typed_token
+    code
+    dsl_token_kind.generated
+
+cpp_test:
+  name: dsl_parser_test
+  sources: dsl_parser_test.cpp
+  libs:
+    /bee/testing
+    dsl_parser
+  output: dsl_parser_test.out
+
+cpp_library:
+  name: dsl_token_kind.generated
+  sources: dsl_token_kind.generated.cpp
+  headers: dsl_token_kind.generated.hpp
+  libs: /exc/enum
+
+gen_rule:
+  name: dsl_token_kind_exc_codegen
+  binary: /exc/exc
+  flags:
+    compile
+    dsl_token_kind.exc
+  data: dsl_token_kind.exc
+  outputs:
+    dsl_token_kind.generated.cpp
+    dsl_token_kind.generated.hpp
+
+cpp_library:
+  name: formatter
+  sources: formatter.cpp
+  headers: formatter.hpp
+  libs:
+    /bee/file_path
+    /bee/or_error
+    /bee/print
+

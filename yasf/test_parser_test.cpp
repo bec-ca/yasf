@@ -1,10 +1,9 @@
+#include "cof.hpp"
 #include "config_parser.hpp"
-#include "test_parser.hpp"
+#include "example.generated.hpp"
 
 #include "bee/format_optional.hpp"
 #include "bee/testing.hpp"
-
-using namespace test_parser;
 
 using std::string;
 
@@ -13,23 +12,24 @@ namespace {
 
 void run_test(const string& doc)
 {
-  must(config, ConfigParser::parse_from_string("test.txt", doc));
+  must(config, ConfigParser::parse_from_string(bee::FilePath("test.txt"), doc));
   P("original:");
   P(config->to_string_hum());
-  must(parsed, top::of_yasf_value(config));
+  must(parsed, example::top::of_yasf_value(config));
   auto back = parsed.to_yasf_value();
   P("round trip:");
   P(back->to_string_hum());
   P("round trip once more:");
-  must(parsed_again, top::of_yasf_value(back));
+  must(parsed_again, example::top::of_yasf_value(back));
   P(parsed_again.to_yasf_value()->to_string_hum());
   P("location: $", config->location());
 };
 
 void run_error_test(const string& doc)
 {
-  must(config, ConfigParser::parse_from_string("foobar.txt", doc));
-  auto err = top::of_yasf_value(config);
+  must(
+    config, ConfigParser::parse_from_string(bee::FilePath("foobar.txt"), doc));
+  auto err = example::top::of_yasf_value(config);
   if (err.is_error()) {
     P(err.error());
   } else {
@@ -49,7 +49,7 @@ foos:
     int_field: 5
     float_field: 5.4
     vector_int_field:
-    variant:
+    variant_field:
       int:
         5
     color: red
@@ -72,7 +72,7 @@ foos:
     opt_vec_field: foo
     float_field: 5.4
     vector_int_field:
-    variant:
+    variant_field:
       int:
         5
     color: red
@@ -95,7 +95,7 @@ foos:
     opt_vec_field:
     float_field: 5.4
     vector_int_field:
-    variant:
+    variant_field:
       int:
         5
     color: red
@@ -116,7 +116,7 @@ foos:
     opt_field: 8
     float_field: 5.4
     vector_int_field:
-    variant:
+    variant_field:
       int:
         5
     color: red
@@ -137,7 +137,7 @@ foos:
     opt_field: 8
     float_field: 5.4
     vector_int_field:
-    variant:
+    variant_field:
       int:
         5
     color: red
@@ -159,13 +159,25 @@ foos:
     opt_field: 8
     float_field: 5.4
     vector_int_field:
-    variant:
+    variant_field:
       int:
         5
     color: red
 )";
 
   run_error_test(example);
+}
+
+TEST(time)
+{
+  example::foo f;
+  f.time = Time::of_string("2023-01-01 12:00:00").value();
+  example::top data;
+  data.foos.push_back(f);
+  auto str = Cof::serialize(data);
+  P(str);
+  must(parsed, Cof::deserialize<example::top>(str));
+  P(parsed);
 }
 
 } // namespace

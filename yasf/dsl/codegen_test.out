@@ -1,0 +1,92 @@
+================================================================================
+Test: gen
+foobar/source/file.generated.hpp
+#pragma once
+
+#include <set>
+#include <string>
+#include <variant>
+#include <vector>
+
+#include "bee/or_error.hpp"
+#include "yasf/serializer.hpp"
+#include "yasf/to_stringable_mixin.hpp"
+
+namespace carrot {
+
+struct hello : public yasf::ToStringableMixin<hello> {
+  std::string name;
+
+  static bee::OrError<hello> of_yasf_value(
+    const yasf::Value::ptr& config_value);
+
+  yasf::Value::ptr to_yasf_value() const;
+};
+
+} // namespace carrot
+
+
+foobar/source/file.generated.cpp
+#include "file.generated.hpp"
+
+#include <type_traits>
+
+#include "bee/format.hpp"
+#include "bee/util.hpp"
+#include "yasf/parser_helpers.hpp"
+#include "yasf/serializer.hpp"
+
+using PH = yasf::ParserHelper;
+
+namespace carrot {
+
+////////////////////////////////////////////////////////////////////////////////
+// hello
+//
+
+bee::OrError<hello> hello::of_yasf_value(const yasf::Value::ptr& value)
+{
+  if (!value->is_list()) {
+    return PH::err("Record expected a list, but got something else", value);
+  }
+
+  std::optional<std::string> output_name;
+
+  for (const auto& element : value->list()) {
+    if (!element->is_key_value()) {
+      return PH::err("Expected a key value as a record element", element);
+    }
+
+    const auto& kv = element->key_value();
+    const std::string& name = kv.key;
+    if (name == "name") {
+      if (output_name.has_value()) {
+        return PH::err("Field 'name' is defined more than once", element);
+      }
+      bail_assign(output_name, yasf::des<std::string>(kv.value));
+    } else {
+      return PH::err("No such field in record of type hello", element);
+    }
+  }
+
+  if (!output_name.has_value()) {
+    return PH::err("Field 'name' not defined", value);
+  }
+
+  return hello{
+    .name = std::move(*output_name),
+  };
+}
+
+yasf::Value::ptr hello::to_yasf_value() const
+{
+  std::vector<yasf::Value::ptr> fields;
+  PH::push_back_field(fields, yasf::ser(name), "name");
+  return yasf::Value::create_list(std::move(fields), std::nullopt);
+}
+
+} // namespace carrot
+
+
+
+

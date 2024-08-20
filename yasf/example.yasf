@@ -1,0 +1,33 @@
+ns yasf.example
+
+variant int_or_str {
+  int int;
+  str str;
+}
+
+enum Color {
+  red;
+  blue;
+  green;
+}
+
+record foo {
+  attr location;
+
+  // This is a comment
+  bar str;
+  eggs str vector;
+  bool_field bool;
+  int_field int;
+  opt_field int optional;
+  opt_vec_field str vector optional;
+  float_field float;
+  vector_int_field int vector;
+  variant_field int_or_str;
+  color Color optional;
+  time time optional;
+}
+
+record top {
+  foos foo vector optional;
+}

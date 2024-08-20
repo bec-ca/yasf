@@ -1,12 +1,13 @@
 #pragma once
 
+#include <concepts>
 #include <map>
+#include <optional>
 #include <set>
 
 #include "value.hpp"
 
-#include "bee/span.hpp"
-#include "bee/time.hpp"
+#include "bee/or_error.hpp"
 
 namespace yasf {
 
@@ -16,9 +17,9 @@ template <class T> struct Serialize;
 // Helper functions
 //
 
-template <class T> Value::ptr ser(const T& value)
+template <class T> Value::ptr ser(T&& value)
 {
-  return Serialize<std::decay_t<T>>::serialize(value);
+  return Serialize<std::decay_t<T>>::serialize(std::forward<T>(value));
 }
 
 template <class T, class... Args>
@@ -50,12 +51,14 @@ template <class T> struct Serialize<bee::OrError<T>> {
   {
     if (value.is_error()) {
       return Value::create_list(
-        {Value::create_atom("<bee::Error", std::nullopt),
-         Value::create_atom(value.error().msg(), std::nullopt)},
+        std::vector<Value::ptr>{
+          Value::create_atom("<bee::Error", std::nullopt),
+          Value::create_atom(value.error().msg(), std::nullopt)},
         std::nullopt);
     } else {
       return Value::create_list(
-        {Value::create_atom("Ok", std::nullopt), ser(value.value())},
+        std::vector<Value::ptr>{
+          Value::create_atom("Ok", std::nullopt), ser(value.value())},
         std::nullopt);
     }
   }
@@ -83,25 +86,45 @@ template <class T> struct Serialize<bee::OrError<T>> {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// string
+// std::string
 //
 
 template <> struct Serialize<std::string> {
-  static Value::ptr serialize(const std::string& value);
+  template <std::convertible_to<std::string> T>
+  static Value::ptr serialize(T&& value)
+  {
+    return Value::create_atom(std::forward<T>(value), std::nullopt);
+  }
   static bee::OrError<std::string> deserialize(const Value::ptr& value);
 };
 
+template <> struct Serialize<const char*> {
+  template <std::convertible_to<std::string> T>
+  static Value::ptr serialize(T&& value)
+  {
+    return Value::create_atom(std::forward<T>(value), std::nullopt);
+  }
+};
+
+template <> struct Serialize<char*> {
+  template <std::convertible_to<std::string> T>
+  static Value::ptr serialize(T&& value)
+  {
+    return Value::create_atom(std::forward<T>(value), std::nullopt);
+  }
+};
+
 ////////////////////////////////////////////////////////////////////////////////
-// optional
+// std::optional
 //
 
 template <class T> struct Serialize<std::optional<T>> {
   static Value::ptr serialize(const std::optional<T>& value)
   {
     if (!value.has_value()) {
-      return ser<std::vector<T>>({});
+      return ser(std::vector<T>());
     } else {
-      return ser<std::vector<T>>({*value});
+      return ser(std::vector<T>{*value});
     }
   }
 
@@ -119,14 +142,14 @@ template <class T> struct Serialize<std::optional<T>> {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// vector
+// std::vector
 //
 
 template <class T> struct Serialize<std::vector<T>> {
   static Value::ptr serialize(const std::vector<T>& values)
   {
     std::vector<Value::ptr> elements;
-    for (const auto& value : values) { elements.push_back(ser<T>(value)); }
+    for (const auto& value : values) { elements.push_back(ser(value)); }
     return Value::create_list(std::move(elements), std::nullopt);
   }
 
@@ -145,14 +168,14 @@ template <class T> struct Serialize<std::vector<T>> {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// set
+// std::set
 //
 
 template <class T> struct Serialize<std::set<T>> {
   static Value::ptr serialize(const std::set<T>& values)
   {
     std::vector<Value::ptr> elements;
-    for (const auto& value : values) { elements.push_back(ser<T>(value)); }
+    for (const auto& value : values) { elements.push_back(ser(value)); }
     return Value::create_list(std::move(elements), std::nullopt);
   }
 
@@ -171,7 +194,7 @@ template <class T> struct Serialize<std::set<T>> {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// map
+// std::map
 //
 
 template <class K, class V> struct Serialize<std::map<K, V>> {
@@ -179,9 +202,7 @@ template <class K, class V> struct Serialize<std::map<K, V>> {
   {
     std::vector<Value::ptr> elements;
     elements.reserve(value.size());
-    for (const auto& el : value) {
-      elements.emplace_back(ser<std::pair<K, V>>(el));
-    }
+    for (const auto& el : value) { elements.emplace_back(ser(el)); }
     return Value::create_list(std::move(elements), std::nullopt);
   }
 
@@ -195,18 +216,19 @@ template <class K, class V> struct Serialize<std::map<K, V>> {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// pair
+// std::pair
 //
 
 template <class T, class U> struct Serialize<std::pair<T, U>> {
   static Value::ptr serialize(const std::pair<T, U>& value)
   {
-    if constexpr (std::is_same_v<T, std::string>) {
+    if constexpr (std::is_convertible_v<T, std::string>) {
       return Value::create_key_value(
-        value.first, ser<U>(value.second), std::nullopt);
+        value.first, ser(value.second), std::nullopt);
     } else {
       return Value::create_list(
-        {ser<T>(value.first), ser<U>(value.second)}, std::nullopt);
+        std::vector<Value::ptr>{ser(value.first), ser(value.second)},
+        std::nullopt);
     }
   }
 
@@ -234,7 +256,7 @@ template <class T, class U> struct Serialize<std::pair<T, U>> {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// tuple
+// std::tuple
 //
 
 template <class... Ts> struct Serialize<std::tuple<Ts...>> {
@@ -254,7 +276,8 @@ template <class... Ts> struct Serialize<std::tuple<Ts...>> {
   template <size_t... I>
   static Value::ptr _ser(const value_type& tup, std::index_sequence<I...>)
   {
-    return Value::create_list({ser(std::get<I>(tup))...}, std::nullopt);
+    return Value::create_list(
+      std::vector<Value::ptr>{ser(std::get<I>(tup))...}, std::nullopt);
   }
 
   template <class T> static T _parse_one(const Value::ptr& v)
@@ -272,91 +295,32 @@ template <class... Ts> struct Serialize<std::tuple<Ts...>> {
     try {
       return value_type{_parse_one<Ts>(lst[I])...};
     } catch (const std::exception& e) {
-      return e;
+      return bee::Error(e);
     }
   }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// long long
+// Basic types
 //
 
-template <> struct Serialize<long long> {
-  static Value::ptr serialize(const long long value);
-  static bee::OrError<long long> deserialize(const Value::ptr& value);
-};
+#define DECLARE_SERIALIZER(T)                                                  \
+  template <> struct Serialize<T> {                                            \
+    static Value::ptr serialize(T value);                                      \
+    static bee::OrError<T> deserialize(const Value::ptr& value);               \
+  };
 
-////////////////////////////////////////////////////////////////////////////////
-// long int
-//
+DECLARE_SERIALIZER(int);
+DECLARE_SERIALIZER(unsigned);
+DECLARE_SERIALIZER(long);
+DECLARE_SERIALIZER(unsigned long);
+DECLARE_SERIALIZER(long long);
+DECLARE_SERIALIZER(unsigned long long);
+DECLARE_SERIALIZER(float);
+DECLARE_SERIALIZER(double);
+DECLARE_SERIALIZER(bee::Unit);
 
-template <> struct Serialize<long int> {
-  static Value::ptr serialize(const long int value);
-  static bee::OrError<long int> deserialize(const Value::ptr& value);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// int
-//
-
-template <> struct Serialize<int> {
-  static Value::ptr serialize(const int value);
-  static bee::OrError<int> deserialize(const Value::ptr& value);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// long unsigned int
-//
-
-template <> struct Serialize<long unsigned int> {
-  static Value::ptr serialize(const long unsigned int value);
-  static bee::OrError<long unsigned int> deserialize(const Value::ptr& value);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// double
-//
-
-template <> struct Serialize<double> {
-  static Value::ptr serialize(const double value);
-  static bee::OrError<double> deserialize(const Value::ptr& value);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// float
-//
-
-template <> struct Serialize<float> {
-  static Value::ptr serialize(const float value);
-  static bee::OrError<float> deserialize(const Value::ptr& value);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// Time
-//
-
-template <> struct Serialize<bee::Time> {
-  static Value::ptr serialize(const bee::Time& value);
-  static bee::OrError<bee::Time> deserialize(const Value::ptr& value);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// Span
-//
-
-template <> struct Serialize<bee::Span> {
-  static Value::ptr serialize(const bee::Span& value);
-  static bee::OrError<bee::Span> deserialize(const Value::ptr& value);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-// bee::Unit
-//
-
-template <> struct Serialize<bee::Unit> {
-  static Value::ptr serialize(bee::Unit value);
-  static bee::OrError<bee::Unit> deserialize(const Value::ptr& value);
-};
+#undef DECLARE_INTEGER_SERIALIZER
 
 ////////////////////////////////////////////////////////////////////////////////
 // Fallback to methods

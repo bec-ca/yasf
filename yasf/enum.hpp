@@ -10,7 +10,7 @@ namespace yasf {
 namespace details {
 
 CustomType::ptr make_enum_type(
-  const char* name, const std::vector<const char*>& values);
+  const std::string& name, const std::vector<std::string>& values);
 
 }
 

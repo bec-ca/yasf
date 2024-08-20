@@ -35,10 +35,6 @@ struct Vector final : public Type {
   {
     return element_type->additional_headers();
   }
-  virtual set<string> additional_serialize_headers() const override
-  {
-    return element_type->additional_serialize_headers();
-  }
 
  private:
   const Type::ptr element_type;
@@ -52,7 +48,7 @@ string Vector::parse_expr(const string& value) const
 
 string Vector::unparse_expr(const string& value) const
 {
-  return F("yasf::ser<$>($)", type_name(), value);
+  return F("yasf::ser($)", value);
 }
 
 string Vector::unparse_expr_optional(const string& value) const

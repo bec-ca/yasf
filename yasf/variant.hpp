@@ -15,7 +15,8 @@ struct VariantLeg {
 
 namespace details {
 
-CustomType::ptr make_variant(const char* name, std::vector<VariantLeg>&& legs);
+CustomType::ptr make_variant(
+  const std::string_view& name, std::vector<VariantLeg>&& legs);
 
 } // namespace details
 

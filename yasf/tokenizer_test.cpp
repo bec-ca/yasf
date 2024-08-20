@@ -1,7 +1,7 @@
 #include "tokenizer.hpp"
 
-#include "bee/error.hpp"
 #include "bee/format_vector.hpp"
+#include "bee/or_error.hpp"
 #include "bee/testing.hpp"
 
 using std::string;
@@ -11,7 +11,7 @@ namespace {
 
 void run_test(const string& document)
 {
-  must(output, Tokenizer::tokenize("", document));
+  must(output, Tokenizer::tokenize(bee::FilePath(""), document));
 
   P("document:\n$*", document);
   P("------");

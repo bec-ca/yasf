@@ -1,12 +1,11 @@
 #pragma once
 
+#include "yasf/serializer.hpp"
 #include "yasf/value.hpp"
 
 namespace yasf {
 
 namespace detail {
-
-Value::ptr string_to_yasf_value(const std::string& str);
 
 bee::OrError<std::string> string_of_yasf_value(const Value::ptr& value);
 
@@ -14,10 +13,7 @@ bee::OrError<std::string> string_of_yasf_value(const Value::ptr& value);
 
 template <class T> struct OfStringableMixin {
  public:
-  Value::ptr to_yasf_value() const
-  {
-    return detail::string_to_yasf_value(parent().to_string());
-  }
+  Value::ptr to_yasf_value() const { return ser(parent().to_string()); }
 
   static bee::OrError<T> of_yasf_value(const Value::ptr& value)
   {
