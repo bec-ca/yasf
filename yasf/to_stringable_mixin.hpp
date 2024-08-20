@@ -2,6 +2,8 @@
 
 #include "value.hpp"
 
+#include "bee/or_error.hpp"
+
 namespace yasf {
 
 struct DetailToStringableMixin {

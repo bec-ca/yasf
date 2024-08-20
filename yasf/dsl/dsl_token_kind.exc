@@ -1,0 +1,25 @@
+ns yasf.dsl
+
+enum TokenKind {
+  // Required legs
+  Comment
+  Empty
+  Eof
+  Identifier
+  Number
+  String
+
+  // Symbols
+  BraceOpen
+  BraceClose
+  Semicolon
+  Period
+
+  // Keywords
+  Record
+  Variant
+  Enum
+  Namespace
+  Optional
+  Attribute
+}

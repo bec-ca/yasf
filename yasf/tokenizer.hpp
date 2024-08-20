@@ -6,7 +6,8 @@
 
 #include "location.hpp"
 
-#include "bee/error.hpp"
+#include "bee/file_path.hpp"
+#include "bee/or_error.hpp"
 
 namespace yasf {
 
@@ -73,7 +74,7 @@ struct Token {
 
 struct Tokenizer {
   static bee::OrError<std::vector<Token>> tokenize(
-    const std::string& filename, const std::string& conent);
+    const bee::FilePath& filename, const std::string& conent);
 };
 
 } // namespace yasf

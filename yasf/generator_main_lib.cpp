@@ -1,12 +1,12 @@
 #include "generator_main_lib.hpp"
 
-#include <filesystem>
 #include <optional>
 #include <string>
 
-#include "clang_format.hpp"
+#include "definitions.hpp"
 
 #include "bee/file_writer.hpp"
+#include "clang_format/clang_format.hpp"
 #include "command/command_builder.hpp"
 #include "command/file_path.hpp"
 #include "command/group_builder.hpp"
@@ -23,56 +23,62 @@ namespace {
 
 bee::OrError<> write_to_file(const FilePath& filename, const string& content)
 {
-  bail_unit(bee::FileWriter::save_file(filename, content));
-
-  return ClangFormat::format_file(filename);
+  bail_unit(bee::FileWriter::write_file(filename, content));
+  return clang_format::ClangFormat::format_file(filename);
 }
 
 bee::OrError<> write_code(
-  const FilePath& output_dir, const string& base_name, const Definitions defs)
+  const FilePath& output_dir,
+  const string& base_name,
+  const CreateDefs& create_defs)
 {
+  const auto& ns = base_name;
+  auto defs = create_defs();
   bail_unit(write_to_file(
-    output_dir / F("$.hpp", base_name), defs.gen_decl(base_name)));
+    output_dir / F("$.generated.hpp", base_name), defs.gen_decl(ns, true)));
   bail_unit(write_to_file(
-    output_dir / F("$.cpp", base_name), defs.gen_impl(base_name)));
+    output_dir / F("$.generated.cpp", base_name),
+    defs.gen_impl(ns, base_name, true)));
 
   return bee::ok();
 }
 
 bee::OrError<> generate_code(
   const optional<FilePath>& output_dir_opt,
-  const optional<string>& base_name_opt)
+  const optional<string>& base_name_opt,
+  const CreateDefs& create_defs)
 {
-  FilePath output_dir = output_dir_opt.value_or(FilePath::of_string("."));
+  FilePath output_dir = output_dir_opt.value_or(FilePath("."));
 
   if (!base_name_opt) { return bee::Error("No basename provided"); }
   string base_name = base_name_opt.value();
 
-  auto defs = create_def();
-
-  auto ret = write_code(output_dir, base_name, defs);
+  auto ret = write_code(output_dir, base_name, create_defs);
   if (ret.is_error()) {
     return bee::Error::fmt("Failed to generated code: $", ret.error());
   }
   return bee::ok();
 }
 
-Cmd gen_command()
+Cmd gen_command(const CreateDefs& create_defs)
 {
-  using namespace command::flags;
+  namespace f = command::flags;
   auto builder = CommandBuilder("Generate code");
-  auto base_name = builder.optional("--base-name", string_flag);
-  auto output_dir = builder.optional("--output-dir", file_path);
-  return builder.run([=]() { return generate_code(*output_dir, *base_name); });
+  auto base_name = builder.optional("--base-name", f::String);
+  auto output_dir = builder.optional("--output-dir", f::FilePath);
+  return builder.run(
+    [=]() { return generate_code(*output_dir, *base_name, create_defs); });
 }
 
 } // namespace
-} // namespace yasf
 
-int main(int argc, char* argv[])
+int GeneratorMainLib::run_main(
+  int argc, char* argv[], const CreateDefs& create_defs)
 {
   return GroupBuilder("Yasf generator")
-    .cmd("gen", yasf::gen_command())
+    .cmd("gen", yasf::gen_command(create_defs))
     .build()
     .main(argc, argv);
 }
+
+} // namespace yasf

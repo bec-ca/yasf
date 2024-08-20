@@ -9,7 +9,7 @@
 namespace yasf {
 
 struct Field {
-  Field(std::string&& name, const Type::ptr& type, bool required);
+  Field(const std::string_view& name, const Type::ptr& type, bool required);
 
   const std::string name;
   const Type::ptr type;
@@ -22,7 +22,9 @@ struct Field {
 namespace details {
 
 CustomType::ptr make_record(
-  const char* name, std::vector<Field>&& fields, bool include_location);
+  const std::string_view& name,
+  std::vector<Field>&& fields,
+  bool include_location);
 
 } // namespace details
 

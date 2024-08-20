@@ -2,6 +2,8 @@
 
 #include "cof.hpp"
 
+#include "bee/parse_string.hpp"
+
 using std::nullopt;
 using std::optional;
 using std::string;
@@ -52,14 +54,19 @@ bee::OrError<int64_t> ParserHelper::to_int(const Value::ptr& config_value)
   if (config_value->is_list()) {
     const auto& elements = config_value->list();
     if (elements.size() != 1) {
-      return bee::Error::fmt(
+      return EF(
         "Expected a single value list to convert to a int, got $",
         elements.size());
     }
     return to_int(elements[0]);
   } else if (config_value->is_atom()) {
     const string& value = config_value->atom();
-    return stoll(value);
+    bail(
+      ret,
+      bee::parse_string<int64_t>(value),
+      "Failed to parse number '$'",
+      value);
+    return ret;
   } else {
     return bee::Error("Cannot convert a key value into an int");
   }
@@ -91,7 +98,7 @@ bee::OrError<double> ParserHelper::to_float(const Value::ptr& config_value)
     return to_float(elements[0]);
   } else {
     const string& value = config_value->atom();
-    return stof(value);
+    return bee::parse_string<float>(value);
   }
 }
 

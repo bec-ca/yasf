@@ -34,10 +34,6 @@ struct Float final : public Type {
   virtual bool has_optional_default() const override { return false; }
 
   virtual set<string> additional_headers() const override { return {}; }
-  virtual set<string> additional_serialize_headers() const override
-  {
-    return {};
-  }
 };
 
 string Float::parse_expr(const string& value) const
@@ -77,10 +73,6 @@ struct Int final : public Type {
   virtual bool has_optional_default() const override { return false; }
 
   virtual set<string> additional_headers() const override { return {}; }
-  virtual set<string> additional_serialize_headers() const override
-  {
-    return {};
-  }
 };
 
 string Int::parse_expr(const string& value) const
@@ -120,10 +112,6 @@ struct Bool final : public Type {
   virtual bool has_optional_default() const override { return true; }
 
   virtual set<string> additional_headers() const override { return {}; }
-  virtual set<string> additional_serialize_headers() const override
-  {
-    return {};
-  }
 };
 
 string Bool::parse_expr(const string& value) const
@@ -163,10 +151,6 @@ struct String final : public Type {
   virtual bool has_optional_default() const override { return false; }
 
   virtual set<string> additional_headers() const override { return {}; }
-  virtual set<string> additional_serialize_headers() const override
-  {
-    return {};
-  }
 
  private:
 };
@@ -178,7 +162,7 @@ string String::parse_expr(const string& value) const
 
 string String::unparse_expr(const string& value) const
 {
-  return F("yasf::ser<$>($)", type_name(), value);
+  return F("yasf::ser($)", value);
 }
 
 string String::unparse_expr_optional(const string& value) const

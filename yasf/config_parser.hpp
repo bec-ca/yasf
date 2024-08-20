@@ -8,22 +8,24 @@
 
 #include "value.hpp"
 
-#include "bee/error.hpp"
+#include "bee/file_path.hpp"
+#include "bee/or_error.hpp"
 
 namespace yasf {
 
 struct ConfigParser {
-  static bee::OrError<Value::ptr> parse_from_file(const std::string& filename);
+  static bee::OrError<Value::ptr> parse_from_file(
+    const bee::FilePath& filename);
 
   template <class T>
-  static bee::OrError<T> parse_file(const std::string& filename)
+  static bee::OrError<T> parse_file(const bee::FilePath& filename)
   {
-    bail(config_parsed, ConfigParser::parse_from_file(filename));
+    bail(config_parsed, parse_from_file(filename));
     return des<T>(config_parsed);
   }
 
   static bee::OrError<Value::ptr> parse_from_string(
-    const std::string& filename, const std::string& content);
+    const bee::FilePath& filename, const std::string& content);
 };
 
 } // namespace yasf

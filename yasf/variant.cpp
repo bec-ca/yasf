@@ -1,5 +1,7 @@
 #include "variant.hpp"
 
+#include "bee/format.hpp"
+
 using std::nullopt;
 using std::optional;
 using std::set;
@@ -18,8 +20,8 @@ struct Variant final : public CustomType {
  public:
   using ptr = std::shared_ptr<Variant>;
 
-  Variant(string&& name, vector<VariantLeg>&& legs)
-      : name(std::move(name)), legs(std::move(legs))
+  Variant(const std::string_view& name, vector<VariantLeg>&& legs)
+      : name(name), legs(std::move(legs))
   {}
 
   virtual ~Variant() {}
@@ -50,16 +52,6 @@ struct Variant final : public CustomType {
     headers.insert("yasf/to_stringable_mixin.hpp");
     for (const auto& leg : legs) {
       bee::insert_many(headers, leg.type->additional_headers());
-    }
-
-    return headers;
-  }
-
-  virtual set<string> additional_serialize_headers() const override
-  {
-    set<string> headers;
-    for (const auto& leg : legs) {
-      bee::insert_many(headers, leg.type->additional_serialize_headers());
     }
 
     return headers;
@@ -101,7 +93,7 @@ string Variant::parse_expr(const string& value) const
 
 string Variant::unparse_expr(const string& value) const
 {
-  return F("yasf::ser<$>($)", type_name(), value);
+  return F("yasf::ser($)", value);
 }
 
 string Variant::unparse_expr_optional(const string& value) const
@@ -227,7 +219,8 @@ optional<string> Variant::default_value() const { return nullopt; }
 
 namespace details {
 
-CustomType::ptr make_variant(const char* name, std::vector<VariantLeg>&& legs)
+CustomType::ptr make_variant(
+  const std::string_view& name, std::vector<VariantLeg>&& legs)
 {
   return make_shared<Variant>(name, std::move(legs));
 }

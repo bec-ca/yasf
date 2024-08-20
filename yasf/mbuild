@@ -1,17 +1,9 @@
 cpp_library:
-  name: clang_format
-  sources: clang_format.cpp
-  headers: clang_format.hpp
-  libs:
-    /bee/error
-    /bee/file_path
-    /bee/sub_process
-
-cpp_library:
   name: cof
   sources: cof.cpp
   headers: cof.hpp
   libs:
+    /bee/file_path
     /bee/file_reader
     /bee/file_writer
     /bee/to_string_t
@@ -22,11 +14,11 @@ cpp_test:
   name: cof_test
   sources: cof_test.cpp
   libs:
-    /bee/format_memory
+    /bee/format_ptr
     /bee/testing
     cof
     config_parser
-    test_parser
+    example.generated
   output: cof_test.out
 
 cpp_library:
@@ -34,8 +26,9 @@ cpp_library:
   sources: config_parser.cpp
   headers: config_parser.hpp
   libs:
-    /bee/error
+    /bee/file_path
     /bee/file_reader
+    /bee/or_error
     /bee/util
     tokenizer
     value
@@ -44,7 +37,7 @@ cpp_test:
   name: config_parser_test
   sources: config_parser_test.cpp
   libs:
-    /bee/format_memory
+    /bee/format_ptr
     /bee/testing
     config_parser
   output: config_parser_test.out
@@ -59,7 +52,6 @@ cpp_library:
   sources: definitions.cpp
   headers: definitions.hpp
   libs:
-    /bee/error
     /bee/format
     /bee/util
     type
@@ -73,6 +65,30 @@ cpp_library:
     type
 
 cpp_library:
+  name: example.generated
+  sources: example.generated.cpp
+  headers: example.generated.hpp
+  libs:
+    /bee/format
+    /bee/or_error
+    /bee/util
+    parser_helpers
+    serializer
+    time
+    to_stringable_mixin
+
+gen_rule:
+  name: example_yasf_codegen
+  binary: /yasf/yasf_compiler
+  flags:
+    compile
+    example.yasf
+  data: example.yasf
+  outputs:
+    example.generated.cpp
+    example.generated.hpp
+
+cpp_library:
   name: external_type
   sources: external_type.cpp
   headers: external_type.hpp
@@ -81,25 +97,12 @@ cpp_library:
     type
 
 cpp_library:
-  name: file_path_serializer
-  sources: file_path_serializer.cpp
-  headers: file_path_serializer.hpp
+  name: file_path
+  sources: file_path.cpp
+  headers: file_path.hpp
   libs:
     /bee/file_path
     serializer
-
-gen_rule:
-  name: generate_test_parser
-  binary: test_parser_generator
-  flags:
-    gen
-    --base-name
-    test_parser
-    --output-dir
-    .
-  outputs:
-    test_parser.cpp
-    test_parser.hpp
 
 cpp_library:
   name: generator
@@ -120,17 +123,19 @@ cpp_library:
   headers: generator_main_lib.hpp
   libs:
     /bee/file_writer
+    /clang_format/clang_format
     /command/command_builder
     /command/file_path
     /command/group_builder
-    clang_format
     definitions
 
 cpp_library:
   name: location
   sources: location.cpp
   headers: location.hpp
-  libs: /bee/format
+  libs:
+    /bee/file_path
+    /bee/format
 
 cpp_library:
   name: of_stringable_mixin
@@ -145,7 +150,8 @@ cpp_library:
   sources: parser_helpers.cpp
   headers: parser_helpers.hpp
   libs:
-    /bee/error
+    /bee/or_error
+    /bee/parse_string
     cof
     serializer
     value
@@ -164,8 +170,9 @@ cpp_library:
   sources: serializer.cpp
   headers: serializer.hpp
   libs:
-    /bee/span
-    /bee/time
+    /bee/or_error
+    /bee/parse_string
+    /bee/to_string
     value
 
 cpp_library:
@@ -177,34 +184,20 @@ cpp_library:
     type
 
 cpp_library:
+  name: span
+  sources: span.cpp
+  headers: span.hpp
+  libs:
+    /bee/parse_string
+    /bee/span
+    serializer
+
+cpp_library:
   name: string_mixin
   headers: string_mixin.hpp
   libs:
     /bee/string_mixin
     of_stringable_mixin
-
-cpp_library:
-  name: test_parser
-  sources: test_parser.cpp
-  headers: test_parser.hpp
-  libs:
-    /bee/error
-    /bee/format
-    /bee/util
-    parser_helpers
-    serializer
-    to_stringable_mixin
-
-cpp_binary:
-  name: test_parser_generator
-  libs: test_parser_generator_main
-
-cpp_library:
-  name: test_parser_generator_main
-  sources: test_parser_generator_main.cpp
-  libs:
-    generator
-    generator_main_lib
 
 cpp_test:
   name: test_parser_test
@@ -212,15 +205,26 @@ cpp_test:
   libs:
     /bee/format_optional
     /bee/testing
+    cof
     config_parser
-    test_parser
+    example.generated
   output: test_parser_test.out
+
+cpp_library:
+  name: time
+  sources: time.cpp
+  headers: time.hpp
+  libs:
+    /bee/parse_string
+    /bee/time
+    serializer
 
 cpp_library:
   name: to_stringable_mixin
   sources: to_stringable_mixin.cpp
   headers: to_stringable_mixin.hpp
   libs:
+    /bee/or_error
     cof
     value
 
@@ -229,15 +233,16 @@ cpp_library:
   sources: tokenizer.cpp
   headers: tokenizer.hpp
   libs:
-    /bee/error
+    /bee/file_path
+    /bee/or_error
     location
 
 cpp_test:
   name: tokenizer_test
   sources: tokenizer_test.cpp
   libs:
-    /bee/error
     /bee/format_vector
+    /bee/or_error
     /bee/testing
     tokenizer
   output: tokenizer_test.out
@@ -251,15 +256,14 @@ cpp_library:
   name: value
   sources: value.cpp
   headers: value.hpp
-  libs:
-    /bee/error
-    location
+  libs: location
 
 cpp_library:
   name: variant
   sources: variant.cpp
   headers: variant.hpp
   libs:
+    /bee/format
     /bee/util
     type
 
@@ -270,4 +274,18 @@ cpp_library:
   libs:
     /bee/format
     type
+
+cpp_binary:
+  name: yasf_compiler
+  libs: yasf_compiler_main
+
+cpp_library:
+  name: yasf_compiler_main
+  sources: yasf_compiler_main.cpp
+  libs:
+    /command/command_builder
+    /command/file_path
+    /command/group_builder
+    dsl/compiler
+    dsl/formatter
 

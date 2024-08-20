@@ -1,0 +1,13 @@
+================================================================================
+Test: parse
+ns yasf
+record Foobar
+  attr location
+  foo int required
+  bar string required
+  bar_optional string optional
+variant SumType
+  apples int
+  oranges string
+
+

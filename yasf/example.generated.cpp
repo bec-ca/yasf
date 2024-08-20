@@ -1,4 +1,4 @@
-#include "test_parser.hpp"
+#include "example.generated.hpp"
 
 #include <type_traits>
 
@@ -6,11 +6,10 @@
 #include "bee/util.hpp"
 #include "yasf/parser_helpers.hpp"
 #include "yasf/serializer.hpp"
-#include "yasf/to_stringable_mixin.hpp"
 
 using PH = yasf::ParserHelper;
 
-namespace test_parser {
+namespace yasf::example {
 
 ////////////////////////////////////////////////////////////////////////////////
 // int_or_str
@@ -50,7 +49,7 @@ yasf::Value::ptr int_or_str::to_yasf_value() const
         "int", {PH::of_int(leg)}, std::nullopt);
     } else if constexpr (std::is_same_v<T, std::string>) {
       return yasf::Value::create_key_value(
-        "str", {yasf::ser<std::string>(leg)}, std::nullopt);
+        "str", {yasf::ser(leg)}, std::nullopt);
     }
   });
 }
@@ -85,10 +84,7 @@ const char* Color::to_string() const
   }
 }
 
-yasf::Value::ptr Color::to_yasf_value() const
-{
-  return yasf::ser<std::string>(to_string());
-}
+yasf::Value::ptr Color::to_yasf_value() const { return yasf::ser(to_string()); }
 
 ////////////////////////////////////////////////////////////////////////////////
 // foo
@@ -108,8 +104,9 @@ bee::OrError<foo> foo::of_yasf_value(const yasf::Value::ptr& value)
   std::optional<std::vector<std::string>> output_opt_vec_field;
   std::optional<double> output_float_field;
   std::optional<std::vector<int64_t>> output_vector_int_field;
-  std::optional<int_or_str> output_variant;
+  std::optional<int_or_str> output_variant_field;
   std::optional<Color> output_color;
+  std::optional<yasf::Time> output_time;
 
   for (const auto& element : value->list()) {
     if (!element->is_key_value()) {
@@ -163,16 +160,22 @@ bee::OrError<foo> foo::of_yasf_value(const yasf::Value::ptr& value)
       }
       bail_assign(
         output_vector_int_field, yasf::des<std::vector<int64_t>>(kv.value));
-    } else if (name == "variant") {
-      if (output_variant.has_value()) {
-        return PH::err("Field 'variant' is defined more than once", element);
+    } else if (name == "variant_field") {
+      if (output_variant_field.has_value()) {
+        return PH::err(
+          "Field 'variant_field' is defined more than once", element);
       }
-      bail_assign(output_variant, yasf::des<int_or_str>(kv.value));
+      bail_assign(output_variant_field, yasf::des<int_or_str>(kv.value));
     } else if (name == "color") {
       if (output_color.has_value()) {
         return PH::err("Field 'color' is defined more than once", element);
       }
       bail_assign(output_color, yasf::des<Color>(kv.value));
+    } else if (name == "time") {
+      if (output_time.has_value()) {
+        return PH::err("Field 'time' is defined more than once", element);
+      }
+      bail_assign(output_time, yasf::des<yasf::Time>(kv.value));
     } else {
       return PH::err("No such field in record of type foo", element);
     }
@@ -197,8 +200,8 @@ bee::OrError<foo> foo::of_yasf_value(const yasf::Value::ptr& value)
   if (!output_vector_int_field.has_value()) {
     return PH::err("Field 'vector_int_field' not defined", value);
   }
-  if (!output_variant.has_value()) {
-    return PH::err("Field 'variant' not defined", value);
+  if (!output_variant_field.has_value()) {
+    return PH::err("Field 'variant_field' not defined", value);
   }
 
   return foo{
@@ -210,8 +213,9 @@ bee::OrError<foo> foo::of_yasf_value(const yasf::Value::ptr& value)
     .opt_vec_field = std::move(*output_opt_vec_field),
     .float_field = std::move(*output_float_field),
     .vector_int_field = std::move(*output_vector_int_field),
-    .variant = std::move(*output_variant),
+    .variant_field = std::move(*output_variant_field),
     .color = std::move(output_color),
+    .time = std::move(output_time),
     .location = value->location(),
   };
 }
@@ -219,28 +223,24 @@ bee::OrError<foo> foo::of_yasf_value(const yasf::Value::ptr& value)
 yasf::Value::ptr foo::to_yasf_value() const
 {
   std::vector<yasf::Value::ptr> fields;
-  PH::push_back_field(fields, yasf::ser<std::string>(bar), "bar");
-  PH::push_back_field(
-    fields, yasf::ser<std::vector<std::string>>(eggs), "eggs");
+  PH::push_back_field(fields, yasf::ser(bar), "bar");
+  PH::push_back_field(fields, yasf::ser(eggs), "eggs");
   PH::push_back_field(fields, PH::of_bool(bool_field), "bool_field");
   PH::push_back_field(fields, PH::of_int(int_field), "int_field");
   if (opt_field.has_value()) {
     PH::push_back_field(fields, PH::of_int(*opt_field), "opt_field");
   }
   if (!opt_vec_field.empty()) {
-    PH::push_back_field(
-      fields,
-      yasf::ser<std::vector<std::string>>(opt_vec_field),
-      "opt_vec_field");
+    PH::push_back_field(fields, yasf::ser(opt_vec_field), "opt_vec_field");
   }
   PH::push_back_field(fields, PH::of_float(float_field), "float_field");
-  PH::push_back_field(
-    fields,
-    yasf::ser<std::vector<int64_t>>(vector_int_field),
-    "vector_int_field");
-  PH::push_back_field(fields, yasf::ser<int_or_str>(variant), "variant");
+  PH::push_back_field(fields, yasf::ser(vector_int_field), "vector_int_field");
+  PH::push_back_field(fields, yasf::ser(variant_field), "variant_field");
   if (color.has_value()) {
-    PH::push_back_field(fields, yasf::ser<Color>(*color), "color");
+    PH::push_back_field(fields, yasf::ser(*color), "color");
+  }
+  if (time.has_value()) {
+    PH::push_back_field(fields, yasf::ser(*time), "time");
   }
   return yasf::Value::create_list(std::move(fields), std::nullopt);
 }
@@ -283,12 +283,8 @@ bee::OrError<top> top::of_yasf_value(const yasf::Value::ptr& value)
 yasf::Value::ptr top::to_yasf_value() const
 {
   std::vector<yasf::Value::ptr> fields;
-  if (!foos.empty()) {
-    PH::push_back_field(fields, yasf::ser<std::vector<foo>>(foos), "foos");
-  }
+  if (!foos.empty()) { PH::push_back_field(fields, yasf::ser(foos), "foos"); }
   return yasf::Value::create_list(std::move(fields), std::nullopt);
 }
 
-} // namespace test_parser
-
-// olint-allow: missing-package-namespace
+} // namespace yasf::example

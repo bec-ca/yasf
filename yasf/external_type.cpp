@@ -20,13 +20,8 @@ namespace {
 
 struct ExternalType final : public Type {
  public:
-  ExternalType(
-    string&& name,
-    optional<string>&& header,
-    optional<string>&& serialize_header)
-      : _name(std::move(name)),
-        _header(header),
-        _serialize_header(serialize_header)
+  ExternalType(string&& name, optional<string>&& header)
+      : _name(std::move(name)), _header(header)
   {}
   virtual ~ExternalType() {}
 
@@ -47,19 +42,9 @@ struct ExternalType final : public Type {
     }
   }
 
-  virtual set<string> additional_serialize_headers() const override
-  {
-    if (_serialize_header.has_value()) {
-      return {*_serialize_header};
-    } else {
-      return {};
-    }
-  }
-
  private:
   const string _name;
   const std::optional<string> _header;
-  const std::optional<string> _serialize_header;
 };
 
 string ExternalType::parse_expr(const string& value) const
@@ -69,7 +54,7 @@ string ExternalType::parse_expr(const string& value) const
 
 string ExternalType::unparse_expr(const string& value) const
 {
-  return F("yasf::ser<$>($)", _name, value);
+  return F("yasf::ser($)", value);
 }
 
 string ExternalType::unparse_expr_optional(const string& value) const
@@ -83,7 +68,7 @@ optional<string> ExternalType::default_value() const { return nullopt; }
 
 GenericExternalType::operator Type::ptr() const
 {
-  return make_shared<ExternalType>(_name, _header, _serialize_header);
+  return make_shared<ExternalType>(_name, _header);
 }
 
 } // namespace yasf

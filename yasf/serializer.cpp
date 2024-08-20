@@ -3,22 +3,17 @@
 #include <optional>
 #include <sstream>
 
+#include "bee/parse_string.hpp"
+#include "bee/to_string.hpp"
+
 using std::nullopt;
 using std::string;
-
-using bee::Span;
-using bee::Time;
 
 namespace yasf {
 
 ////////////////////////////////////////////////////////////////////////////////
-// string
+// std::string
 //
-
-Value::ptr Serialize<string>::serialize(const std::string& value)
-{
-  return Value::create_atom(value, std::nullopt);
-}
 
 bee::OrError<std::string> Serialize<string>::deserialize(
   const Value::ptr& value)
@@ -40,131 +35,29 @@ bee::OrError<std::string> Serialize<string>::deserialize(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// long long
+// Numerical
 //
 
-Value::ptr Serialize<long long>::serialize(const long long value)
-{
-  return ser<std::string>(std::to_string(value));
-}
+#define IMPLEMENT_STRING_PARSER_SERIALIZER(T)                                  \
+  Value::ptr Serialize<T>::serialize(T value)                                  \
+  {                                                                            \
+    return ser(bee::to_string(value, {.decimal_places = 100}));                \
+  }                                                                            \
+                                                                               \
+  bee::OrError<T> Serialize<T>::deserialize(const Value::ptr& value)           \
+  {                                                                            \
+    bail(b, des<std::string>(value));                                          \
+    return bee::parse_string<T>(b);                                            \
+  }
 
-bee::OrError<long long> Serialize<long long>::deserialize(
-  const Value::ptr& value)
-{
-  bail(b, des<std::string>(value));
-  return stol(b);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// long int
-//
-
-Value::ptr Serialize<long int>::serialize(const long int value)
-{
-  return ser<std::string>(std::to_string(value));
-}
-
-bee::OrError<long int> Serialize<long int>::deserialize(const Value::ptr& value)
-{
-  bail(b, des<std::string>(value));
-  return stol(b);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// int
-//
-
-Value::ptr Serialize<int>::serialize(const int value)
-{
-  return ser<std::string>(std::to_string(value));
-}
-
-bee::OrError<int> Serialize<int>::deserialize(const Value::ptr& value)
-{
-  bail(b, des<std::string>(value));
-  return stol(b);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// long unsigned int
-//
-
-Value::ptr Serialize<long unsigned int>::serialize(
-  const long unsigned int value)
-{
-  return ser<std::string>(std::to_string(value));
-}
-
-bee::OrError<long unsigned int> Serialize<long unsigned int>::deserialize(
-  const Value::ptr& value)
-{
-  bail(b, des<std::string>(value));
-  return stoul(b);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// double
-//
-
-Value::ptr Serialize<double>::serialize(const double value)
-{
-  std::ostringstream s;
-  s << value;
-  return ser(std::move(s.str()));
-}
-
-bee::OrError<double> Serialize<double>::deserialize(const Value::ptr& value)
-{
-  bail(b, des<std::string>(value));
-  return std::stod(b);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// float
-//
-
-Value::ptr Serialize<float>::serialize(const float value)
-{
-  std::ostringstream s;
-  s << value;
-  return ser(std::move(s.str()));
-}
-
-bee::OrError<float> Serialize<float>::deserialize(const Value::ptr& value)
-{
-  bail(b, des<std::string>(value));
-  return std::stof(b);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Time
-//
-
-Value::ptr Serialize<Time>::serialize(const Time& value)
-{
-  return ser<int64_t>(value.to_nanos_since_epoch());
-}
-
-bee::OrError<Time> Serialize<Time>::deserialize(const Value::ptr& value)
-{
-  bail(ts, des<int64_t>(value));
-  return Time::of_nanos_since_epoch(ts);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Span
-//
-
-Value::ptr Serialize<Span>::serialize(const Span& value)
-{
-  return ser<double>(value.to_float_seconds());
-}
-
-bee::OrError<Span> Serialize<Span>::deserialize(const Value::ptr& value)
-{
-  bail(ts, des<double>(value));
-  return Span::of_seconds(ts);
-}
+IMPLEMENT_STRING_PARSER_SERIALIZER(int);
+IMPLEMENT_STRING_PARSER_SERIALIZER(unsigned);
+IMPLEMENT_STRING_PARSER_SERIALIZER(long);
+IMPLEMENT_STRING_PARSER_SERIALIZER(unsigned long);
+IMPLEMENT_STRING_PARSER_SERIALIZER(long long);
+IMPLEMENT_STRING_PARSER_SERIALIZER(unsigned long long);
+IMPLEMENT_STRING_PARSER_SERIALIZER(float);
+IMPLEMENT_STRING_PARSER_SERIALIZER(double);
 
 ////////////////////////////////////////////////////////////////////////////////
 // bee::Unit
@@ -172,7 +65,7 @@ bee::OrError<Span> Serialize<Span>::deserialize(const Value::ptr& value)
 
 Value::ptr Serialize<bee::Unit>::serialize(bee::Unit)
 {
-  return Value::create_list({}, nullopt);
+  return Value::create_list(std::vector<Value::ptr>(), nullopt);
 }
 
 bee::OrError<bee::Unit> Serialize<bee::Unit>::deserialize(

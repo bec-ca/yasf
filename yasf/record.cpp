@@ -16,8 +16,8 @@ namespace yasf {
 // Field
 //
 
-Field::Field(string&& name, const Type::ptr& type, bool required)
-    : name(std::move(name)), type(std::move(type)), is_required(required)
+Field::Field(const std::string_view& name, const Type::ptr& type, bool required)
+    : name(name), type(std::move(type)), is_required(required)
 {}
 
 string Field::gen_decl() const
@@ -27,9 +27,8 @@ string Field::gen_decl() const
   bool is_container = type->is_container();
   auto use_std_opt = !is_required && !is_container && !has_optional_default;
   if (use_std_opt) { type_name = F("std::optional<$>", type_name); }
-  auto def =
-    is_required ? type->default_value() : (use_std_opt ? "std::nullopt" : "{}");
-  return F("$ $ $;\n", type_name, name, def ? F(" = $", *def) : "");
+  auto def = is_required ? type->default_value() : "";
+  return F("$ $ $;\n", type_name, name, def ? F("{{$}", *def) : "");
 }
 
 string Field::gen_variable_name() const { return F("output_$", name); }
@@ -50,8 +49,9 @@ Field optional_field(string&& name, const Type::ptr& type)
 
 struct Record final : public CustomType {
  public:
-  Record(string&& name, vector<Field>&& fields, bool include_location)
-      : name(std::move(name)),
+  Record(
+    const std::string_view& name, vector<Field>&& fields, bool include_location)
+      : name(name),
         fields(std::move(fields)),
         include_location(include_location)
   {}
@@ -85,17 +85,6 @@ struct Record final : public CustomType {
     return headers;
   }
 
-  virtual set<string> additional_serialize_headers() const override
-  {
-    set<string> headers;
-    headers.insert("yasf/to_stringable_mixin.hpp");
-    for (const auto& field : fields) {
-      bee::insert_many(headers, field.type->additional_serialize_headers());
-    }
-
-    return headers;
-  }
-
  private:
   const string name;
   const vector<Field> fields;
@@ -108,7 +97,7 @@ string Record::gen_decl() const
   output += F("struct $ : public yasf::ToStringableMixin<$> {{\n", name, name);
   for (const auto& field : fields) { output += field.gen_decl(); }
   if (include_location) {
-    output += "std::optional<yasf::Location> location;\n";
+    output += "std::optional<yasf::Location> location{};\n";
   }
   output += "\n";
   output +=
@@ -281,10 +270,11 @@ optional<string> Record::default_value() const { return nullopt; }
 namespace details {
 
 CustomType::ptr make_record(
-  const char* name, std::vector<Field>&& fields, bool include_location)
+  const std::string_view& name,
+  std::vector<Field>&& fields,
+  bool include_location)
 {
-  return make_shared<Record>(
-    Record(std::move(name), std::move(fields), include_location));
+  return make_shared<Record>(Record(name, std::move(fields), include_location));
 }
 
 } // namespace details
